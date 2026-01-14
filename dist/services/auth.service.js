@@ -84,6 +84,22 @@ class AuthService {
         });
         return { success: true };
     }
+    async getLatestCustomer() {
+        const customer = await database_1.default.user.findFirst({
+            where: { role: client_1.UserRole.CUSTOMER },
+            orderBy: { createdAt: 'desc' },
+            select: {
+                id: true,
+                phone: true,
+                name: true,
+                email: true,
+                role: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+        });
+        return customer;
+    }
 }
 exports.AuthService = AuthService;
 exports.default = new AuthService();

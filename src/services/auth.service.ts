@@ -95,6 +95,24 @@ export class AuthService {
 
     return { success: true };
   }
+
+  async getLatestCustomer() {
+    const customer = await prisma.user.findFirst({
+      where: { role: UserRole.CUSTOMER },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        phone: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return customer;
+  }
 }
 
 export default new AuthService();

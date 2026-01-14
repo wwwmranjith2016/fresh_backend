@@ -89,6 +89,20 @@ export class AuthController {
       return sendError(res, error.message || 'Logout failed', 400);
     }
   }
+
+  async getLatestCustomer(req: Request, res: Response) {
+    try {
+      const customer = await authService.getLatestCustomer();
+      
+      if (!customer) {
+        return sendError(res, 'No customers found', 404);
+      }
+
+      return sendSuccess(res, customer, 'Latest customer retrieved');
+    } catch (error: any) {
+      return sendError(res, error.message || 'Failed to get latest customer', 400);
+    }
+  }
 }
 
 export default new AuthController();
