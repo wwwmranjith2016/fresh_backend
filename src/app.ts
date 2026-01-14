@@ -12,7 +12,6 @@ import orderRoutes from './routes/order.routes';
 import addressRoutes from './routes/address.routes';
 import notificationRoutes from './routes/notification.routes';
 import adminRoutes from './routes/admin.routes';
-import customerRoutes from './routes/customer.routes';
 
 const app: Application = express();
 const server = http.createServer(app);
@@ -43,7 +42,6 @@ app.get('/', (req: Request, res: Response) => {
       addresses: '/api/addresses',
       notifications: '/api/notifications',
       admin: '/api/admin',
-      customers: '/api/customers'
     }
   });
 });
@@ -54,7 +52,6 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/addresses', addressRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/customers', customerRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
