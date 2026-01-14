@@ -1,5 +1,4 @@
 node_modules
-dist
 build
 
 # Keep environment variables out of version control
