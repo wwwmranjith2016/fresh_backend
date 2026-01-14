@@ -10,10 +10,10 @@ async function main() {
   const customerPassword = await bcrypt.hash('customer123', 10);
 
   const admin = await prisma.user.upsert({
-    where: { phone: '+919876543210' },
+    where: { phone: '8248904925' },
     update: {},
     create: {
-      phone: '+919876543210',
+      phone: '8248904925',
       password: adminPassword,
       name: 'Admin User',
       email: 'admin@freshchicken.com',
@@ -147,8 +147,8 @@ async function main() {
   console.log('\n✨ Seeding completed successfully!');
   console.log('\n📋 Test Credentials:');
   console.log('   Admin:');
-  console.log('   Phone: +919876543210');
-  console.log('   Password: admin123');
+  console.log('   Phone: 8248904925');
+  console.log('   Password: abcd1234');
   console.log('\n   Customer:');
   console.log('   Phone: +919876543211');
   console.log('   Password: customer123');
