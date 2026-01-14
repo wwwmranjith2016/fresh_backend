@@ -17,7 +17,6 @@ const order_routes_1 = __importDefault(require("./routes/order.routes"));
 const address_routes_1 = __importDefault(require("./routes/address.routes"));
 const notification_routes_1 = __importDefault(require("./routes/notification.routes"));
 const admin_routes_1 = __importDefault(require("./routes/admin.routes"));
-const customer_routes_1 = __importDefault(require("./routes/customer.routes"));
 const app = (0, express_1.default)();
 exports.app = app;
 const server = http_1.default.createServer(app);
@@ -45,7 +44,6 @@ app.get('/', (req, res) => {
             addresses: '/api/addresses',
             notifications: '/api/notifications',
             admin: '/api/admin',
-            customers: '/api/customers'
         }
     });
 });
@@ -55,7 +53,6 @@ app.use('/api/orders', order_routes_1.default);
 app.use('/api/addresses', address_routes_1.default);
 app.use('/api/notifications', notification_routes_1.default);
 app.use('/api/admin', admin_routes_1.default);
-app.use('/api/customers', customer_routes_1.default);
 app.use(error_middleware_1.notFoundHandler);
 app.use(error_middleware_1.errorHandler);
 const startServer = async () => {
