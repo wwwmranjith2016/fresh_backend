@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrderController = void 0;
 const order_service_1 = __importDefault(require("../services/order.service"));
 const response_util_1 = require("../utils/response.util");
+const jwt_util_1 = require("../utils/jwt.util");
 class OrderController {
     async createGuestOrder(req, res) {
         try {
@@ -21,8 +22,25 @@ class OrderController {
                     return (0, response_util_1.sendError)(res, 'Complete address is required', 400);
                 }
             }
-            const order = await order_service_1.default.createGuestOrder(data);
-            return (0, response_util_1.sendSuccess)(res, order, 'Order placed successfully', 201);
+            const { order, user } = await order_service_1.default.createGuestOrder(data);
+            const payload = {
+                id: user.id,
+                phone: user.phone,
+                role: user.role,
+            };
+            const accessToken = (0, jwt_util_1.generateAccessToken)(payload);
+            const refreshToken = (0, jwt_util_1.generateRefreshToken)(payload);
+            return (0, response_util_1.sendSuccess)(res, {
+                order,
+                accessToken,
+                refreshToken,
+                user: {
+                    id: user.id,
+                    phone: user.phone,
+                    name: user.name,
+                    role: user.role,
+                }
+            }, 'Order placed successfully', 201);
         }
         catch (error) {
             return (0, response_util_1.sendError)(res, error.message || 'Failed to create order', 400);

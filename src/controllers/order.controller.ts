@@ -3,6 +3,7 @@ import orderService from '../services/order.service';
 import { sendSuccess, sendError } from '../utils/response.util';
 import { AuthRequest, CreateOrderRequest, GuestOrderRequest } from '../types';
 import { OrderStatus } from '@prisma/client';
+import { generateAccessToken, generateRefreshToken } from '../utils/jwt.util';
 
 export class OrderController {
   async createGuestOrder(req: Request, res: Response) {
@@ -23,8 +24,28 @@ export class OrderController {
         }
       }
 
-      const order = await orderService.createGuestOrder(data);
-      return sendSuccess(res, order, 'Order placed successfully', 201);
+      const { order, user } = await orderService.createGuestOrder(data);
+
+      const payload = {
+        id: user.id,
+        phone: user.phone,
+        role: user.role,
+      };
+
+      const accessToken = generateAccessToken(payload);
+      const refreshToken = generateRefreshToken(payload);
+
+      return sendSuccess(res, {
+        order,
+        accessToken,
+        refreshToken,
+        user: {
+          id: user.id,
+          phone: user.phone,
+          name: user.name,
+          role: user.role,
+        }
+      }, 'Order placed successfully', 201);
     } catch (error: any) {
       return sendError(res, error.message || 'Failed to create order', 400);
     }

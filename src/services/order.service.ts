@@ -51,12 +51,14 @@ export class OrderService {
       });
     }
 
-    return this.createOrder(user.id, {
+    const order = await this.createOrder(user.id, {
       addressId,
       items: data.items,
       paymentMethod: data.paymentMethod,
       notes: data.notes,
     });
+
+    return { order, user };
   }
   async createOrder(userId: string, data: CreateOrderRequest) {
     let subtotal = 0;

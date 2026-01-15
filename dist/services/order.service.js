@@ -50,12 +50,13 @@ class OrderService {
                 data: { isDefault: true },
             });
         }
-        return this.createOrder(user.id, {
+        const order = await this.createOrder(user.id, {
             addressId,
             items: data.items,
             paymentMethod: data.paymentMethod,
             notes: data.notes,
         });
+        return { order, user };
     }
     async createOrder(userId, data) {
         let subtotal = 0;
