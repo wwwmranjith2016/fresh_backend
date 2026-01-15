@@ -5,6 +5,9 @@ import { generateAccessToken, generateRefreshToken, JwtPayload } from '../utils/
 import { UserRole } from '@prisma/client';
 import { normalizePhone } from '../utils/phone-util';
 
+console.log('Current directory:', __dirname);
+console.log('Resolving module path:', require.resolve('../utils/phone-util'));
+
 export class AuthService {
   async register(data: RegisterRequest) {
     const phone = normalizePhone(data.phone);
