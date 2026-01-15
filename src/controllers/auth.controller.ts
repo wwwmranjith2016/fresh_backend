@@ -3,7 +3,7 @@ import authService from '../services/auth.service';
 import { sendSuccess, sendError } from '../utils/response.util';
 import { RegisterRequest, LoginRequest, AuthRequest } from '../types';
 import { generateAccessToken, verifyRefreshToken } from '../utils/jwt.util';
-import { normalizePhone } from '../utils/phone.util';
+import { normalizePhone } from '../utils/phone-util';
 
 export class AuthController {
   async register(req: Request, res: Response) {

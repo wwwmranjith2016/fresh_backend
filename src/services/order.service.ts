@@ -3,7 +3,7 @@ import { CreateOrderRequest, UpdateOrderStatusRequest, GuestOrderRequest } from 
 import { generateOrderNumber } from '../utils/orderNumber.util';
 import notificationService from './notification.service';
 import { OrderStatus, Prisma } from '@prisma/client';
-import { normalizePhone } from '../utils/phone.util';
+import { normalizePhone } from '../utils/phone-util';
 
 export class OrderService {
   async createGuestOrder(data: GuestOrderRequest) {

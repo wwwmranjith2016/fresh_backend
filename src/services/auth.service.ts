@@ -3,7 +3,7 @@ import prisma from '../config/database';
 import { RegisterRequest, LoginRequest } from '../types';
 import { generateAccessToken, generateRefreshToken, JwtPayload } from '../utils/jwt.util';
 import { UserRole } from '@prisma/client';
-import { normalizePhone } from '../utils/phone.util';
+import { normalizePhone } from '../utils/phone-util';
 
 export class AuthService {
   async register(data: RegisterRequest) {
