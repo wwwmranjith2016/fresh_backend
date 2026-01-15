@@ -9,5 +9,6 @@ router.post('/login', authController.login.bind(authController));
 router.post('/refresh', authController.refreshToken.bind(authController));
 router.post('/logout', authMiddleware, authController.logout.bind(authController));
 router.put('/fcm-token', authMiddleware, authController.updateFcmToken.bind(authController));
+router.get('/user/:phone', authController.getUserByPhone.bind(authController));
 
 export default router;

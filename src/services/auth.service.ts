@@ -113,6 +113,35 @@ export class AuthService {
 
     return customer;
   }
+
+  async getUserByPhone(phone: string) {
+    const user = await prisma.user.findUnique({
+      where: { phone },
+      select: {
+        id: true,
+        phone: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    const addresses = await prisma.address.findMany({
+      where: { userId: user.id },
+      orderBy: { lastUsedAt: 'desc' },
+    });
+
+    return {
+      user,
+      addresses,
+    };
+  }
 }
 
 export default new AuthService();

@@ -11,6 +11,10 @@ export class OrderService {
     });
 
     if (!user) {
+      if (!data.name || !data.address) {
+        throw new Error('Name and address are required for new users');
+      }
+
       user = await prisma.user.create({
         data: {
           phone: data.phone,
@@ -21,20 +25,35 @@ export class OrderService {
       });
     }
 
-    const address = await prisma.address.create({
-      data: {
-        userId: user.id,
-        label: 'Home',
-        street: data.address.street,
-        city: data.address.city,
-        state: data.address.state,
-        zipCode: data.address.zipCode,
-        isDefault: true,
-      },
-    });
+    let addressId = data.addressId;
+
+    if (!addressId) {
+      if (!data.address) {
+        throw new Error('Address is required');
+      }
+
+      const newAddress = await prisma.address.create({
+        data: {
+          userId: user.id,
+          label: 'Home',
+          street: data.address.street,
+          city: data.address.city,
+          state: data.address.state,
+          zipCode: data.address.zipCode,
+          isDefault: true,
+          lastUsedAt: new Date(),
+        },
+      });
+      addressId = newAddress.id;
+    } else {
+      await prisma.address.update({
+        where: { id: addressId },
+        data: { lastUsedAt: new Date() },
+      });
+    }
 
     return this.createOrder(user.id, {
-      addressId: address.id,
+      addressId,
       items: data.items,
       paymentMethod: data.paymentMethod,
       notes: data.notes,

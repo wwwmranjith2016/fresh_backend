@@ -103,6 +103,30 @@ export class AuthController {
       return sendError(res, error.message || 'Failed to get latest customer', 400);
     }
   }
+
+  async getUserByPhone(req: Request, res: Response) {
+    try {
+      const { phone } = req.params;
+
+      if (!phone) {
+        return sendError(res, 'Phone number is required', 400);
+      }
+
+      const result = await authService.getUserByPhone(phone);
+      
+      if (!result) {
+        return sendSuccess(res, { exists: false, user: null, addresses: [] });
+      }
+
+      return sendSuccess(res, { 
+        exists: true, 
+        user: result.user, 
+        addresses: result.addresses 
+      });
+    } catch (error: any) {
+      return sendError(res, error.message || 'Failed to get user by phone', 400);
+    }
+  }
 }
 
 export default new AuthController();

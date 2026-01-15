@@ -100,6 +100,31 @@ class AuthService {
         });
         return customer;
     }
+    async getUserByPhone(phone) {
+        const user = await database_1.default.user.findUnique({
+            where: { phone },
+            select: {
+                id: true,
+                phone: true,
+                name: true,
+                email: true,
+                role: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+        });
+        if (!user) {
+            return null;
+        }
+        const addresses = await database_1.default.address.findMany({
+            where: { userId: user.id },
+            orderBy: { lastUsedAt: 'desc' },
+        });
+        return {
+            user,
+            addresses,
+        };
+    }
 }
 exports.AuthService = AuthService;
 exports.default = new AuthService();

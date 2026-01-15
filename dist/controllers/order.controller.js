@@ -10,11 +10,13 @@ class OrderController {
     async createGuestOrder(req, res) {
         try {
             const data = req.body;
-            if (!data.phone || !data.name || !data.address || !data.items || data.items.length === 0) {
-                return (0, response_util_1.sendError)(res, 'Phone, name, address and items are required', 400);
+            if (!data.phone || !data.items || data.items.length === 0) {
+                return (0, response_util_1.sendError)(res, 'Phone and items are required', 400);
             }
-            if (!data.address.street || !data.address.city || !data.address.state || !data.address.zipCode) {
-                return (0, response_util_1.sendError)(res, 'Complete address is required', 400);
+            if (!data.addressId && data.address) {
+                if (!data.address.street || !data.address.city || !data.address.state || !data.address.zipCode) {
+                    return (0, response_util_1.sendError)(res, 'Complete address is required', 400);
+                }
             }
             const order = await order_service_1.default.createGuestOrder(data);
             return (0, response_util_1.sendSuccess)(res, order, 'Order placed successfully', 201);

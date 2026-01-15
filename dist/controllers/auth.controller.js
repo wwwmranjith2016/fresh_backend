@@ -92,6 +92,26 @@ class AuthController {
             return (0, response_util_1.sendError)(res, error.message || 'Failed to get latest customer', 400);
         }
     }
+    async getUserByPhone(req, res) {
+        try {
+            const { phone } = req.params;
+            if (!phone) {
+                return (0, response_util_1.sendError)(res, 'Phone number is required', 400);
+            }
+            const result = await auth_service_1.default.getUserByPhone(phone);
+            if (!result) {
+                return (0, response_util_1.sendSuccess)(res, { exists: false, user: null, addresses: [] });
+            }
+            return (0, response_util_1.sendSuccess)(res, {
+                exists: true,
+                user: result.user,
+                addresses: result.addresses
+            });
+        }
+        catch (error) {
+            return (0, response_util_1.sendError)(res, error.message || 'Failed to get user by phone', 400);
+        }
+    }
 }
 exports.AuthController = AuthController;
 exports.default = new AuthController();

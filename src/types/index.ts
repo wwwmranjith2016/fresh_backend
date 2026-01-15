@@ -43,8 +43,9 @@ export interface CreateOrderRequest {
 
 export interface GuestOrderRequest {
   phone: string;
-  name: string;
-  address: {
+  name?: string;
+  addressId?: string;
+  address?: {
     street: string;
     city: string;
     state: string;
