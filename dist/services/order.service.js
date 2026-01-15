@@ -40,7 +40,6 @@ class OrderService {
                     state: data.address.state,
                     zipCode: data.address.zipCode,
                     isDefault: true,
-                    lastUsedAt: new Date(),
                 },
             });
             addressId = newAddress.id;
@@ -48,7 +47,7 @@ class OrderService {
         else {
             await database_1.default.address.update({
                 where: { id: addressId },
-                data: { lastUsedAt: new Date() },
+                data: { isDefault: true },
             });
         }
         return this.createOrder(user.id, {

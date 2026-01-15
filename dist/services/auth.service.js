@@ -118,7 +118,7 @@ class AuthService {
         }
         const addresses = await database_1.default.address.findMany({
             where: { userId: user.id },
-            orderBy: { lastUsedAt: 'desc' },
+            orderBy: { createdAt: 'desc' },
         });
         return {
             user,

@@ -134,7 +134,7 @@ export class AuthService {
 
     const addresses = await prisma.address.findMany({
       where: { userId: user.id },
-      orderBy: { lastUsedAt: 'desc' },
+      orderBy: { createdAt: 'desc' },
     });
 
     return {
