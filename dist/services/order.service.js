@@ -8,10 +8,12 @@ const database_1 = __importDefault(require("../config/database"));
 const orderNumber_util_1 = require("../utils/orderNumber.util");
 const notification_service_1 = __importDefault(require("./notification.service"));
 const client_1 = require("@prisma/client");
+const phone_util_1 = require("../utils/phone-util");
 class OrderService {
     async createGuestOrder(data) {
+        const phone = (0, phone_util_1.normalizePhone)(data.phone);
         let user = await database_1.default.user.findUnique({
-            where: { phone: data.phone },
+            where: { phone },
         });
         if (!user) {
             if (!data.name || !data.address) {
@@ -19,7 +21,7 @@ class OrderService {
             }
             user = await database_1.default.user.create({
                 data: {
-                    phone: data.phone,
+                    phone,
                     name: data.name,
                     password: '',
                     role: 'CUSTOMER',

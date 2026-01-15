@@ -2,7 +2,8 @@ import { Request, Response } from 'express';
 import authService from '../services/auth.service';
 import { sendSuccess, sendError } from '../utils/response.util';
 import { RegisterRequest, LoginRequest, AuthRequest } from '../types';
-import { verifyRefreshToken, generateAccessToken } from '../utils/jwt.util';
+import { generateAccessToken, verifyRefreshToken } from '../utils/jwt.util';
+import { normalizePhone } from '../utils/phone-util';
 
 export class AuthController {
   async register(req: Request, res: Response) {
