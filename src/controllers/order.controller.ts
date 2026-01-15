@@ -13,6 +13,10 @@ export class OrderController {
         return sendError(res, 'Phone and items are required', 400);
       }
 
+      if (!data.addressId && !data.address) {
+        return sendError(res, 'Either addressId or address is required', 400);
+      }
+
       if (!data.addressId && data.address) {
         if (!data.address.street || !data.address.city || !data.address.state || !data.address.zipCode) {
           return sendError(res, 'Complete address is required', 400);
