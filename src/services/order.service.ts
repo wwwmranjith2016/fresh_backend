@@ -1,10 +1,45 @@
 import prisma from '../config/database';
-import { CreateOrderRequest, UpdateOrderStatusRequest } from '../types';
+import { CreateOrderRequest, UpdateOrderStatusRequest, GuestOrderRequest } from '../types';
 import { generateOrderNumber } from '../utils/orderNumber.util';
 import notificationService from './notification.service';
 import { OrderStatus, Prisma } from '@prisma/client';
 
 export class OrderService {
+  async createGuestOrder(data: GuestOrderRequest) {
+    let user = await prisma.user.findUnique({
+      where: { phone: data.phone },
+    });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          phone: data.phone,
+          name: data.name,
+          password: '',
+          role: 'CUSTOMER',
+        },
+      });
+    }
+
+    const address = await prisma.address.create({
+      data: {
+        userId: user.id,
+        label: 'Home',
+        street: data.address.street,
+        city: data.address.city,
+        state: data.address.state,
+        zipCode: data.address.zipCode,
+        isDefault: true,
+      },
+    });
+
+    return this.createOrder(user.id, {
+      addressId: address.id,
+      items: data.items,
+      paymentMethod: data.paymentMethod,
+      notes: data.notes,
+    });
+  }
   async createOrder(userId: string, data: CreateOrderRequest) {
     let subtotal = 0;
 

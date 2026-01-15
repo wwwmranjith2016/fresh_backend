@@ -9,6 +9,38 @@ const orderNumber_util_1 = require("../utils/orderNumber.util");
 const notification_service_1 = __importDefault(require("./notification.service"));
 const client_1 = require("@prisma/client");
 class OrderService {
+    async createGuestOrder(data) {
+        let user = await database_1.default.user.findUnique({
+            where: { phone: data.phone },
+        });
+        if (!user) {
+            user = await database_1.default.user.create({
+                data: {
+                    phone: data.phone,
+                    name: data.name,
+                    password: '',
+                    role: 'CUSTOMER',
+                },
+            });
+        }
+        const address = await database_1.default.address.create({
+            data: {
+                userId: user.id,
+                label: 'Home',
+                street: data.address.street,
+                city: data.address.city,
+                state: data.address.state,
+                zipCode: data.address.zipCode,
+                isDefault: true,
+            },
+        });
+        return this.createOrder(user.id, {
+            addressId: address.id,
+            items: data.items,
+            paymentMethod: data.paymentMethod,
+            notes: data.notes,
+        });
+    }
     async createOrder(userId, data) {
         let subtotal = 0;
         for (const item of data.items) {

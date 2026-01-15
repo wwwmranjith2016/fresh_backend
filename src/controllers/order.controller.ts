@@ -1,10 +1,28 @@
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import orderService from '../services/order.service';
 import { sendSuccess, sendError } from '../utils/response.util';
-import { AuthRequest, CreateOrderRequest } from '../types';
+import { AuthRequest, CreateOrderRequest, GuestOrderRequest } from '../types';
 import { OrderStatus } from '@prisma/client';
 
 export class OrderController {
+  async createGuestOrder(req: Request, res: Response) {
+    try {
+      const data: GuestOrderRequest = req.body;
+
+      if (!data.phone || !data.name || !data.address || !data.items || data.items.length === 0) {
+        return sendError(res, 'Phone, name, address and items are required', 400);
+      }
+
+      if (!data.address.street || !data.address.city || !data.address.state || !data.address.zipCode) {
+        return sendError(res, 'Complete address is required', 400);
+      }
+
+      const order = await orderService.createGuestOrder(data);
+      return sendSuccess(res, order, 'Order placed successfully', 201);
+    } catch (error: any) {
+      return sendError(res, error.message || 'Failed to create order', 400);
+    }
+  }
   async createOrder(req: AuthRequest, res: Response) {
     try {
       const userId = req.user?.id;

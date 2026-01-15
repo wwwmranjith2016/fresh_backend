@@ -7,6 +7,22 @@ exports.OrderController = void 0;
 const order_service_1 = __importDefault(require("../services/order.service"));
 const response_util_1 = require("../utils/response.util");
 class OrderController {
+    async createGuestOrder(req, res) {
+        try {
+            const data = req.body;
+            if (!data.phone || !data.name || !data.address || !data.items || data.items.length === 0) {
+                return (0, response_util_1.sendError)(res, 'Phone, name, address and items are required', 400);
+            }
+            if (!data.address.street || !data.address.city || !data.address.state || !data.address.zipCode) {
+                return (0, response_util_1.sendError)(res, 'Complete address is required', 400);
+            }
+            const order = await order_service_1.default.createGuestOrder(data);
+            return (0, response_util_1.sendSuccess)(res, order, 'Order placed successfully', 201);
+        }
+        catch (error) {
+            return (0, response_util_1.sendError)(res, error.message || 'Failed to create order', 400);
+        }
+    }
     async createOrder(req, res) {
         try {
             const userId = req.user?.id;

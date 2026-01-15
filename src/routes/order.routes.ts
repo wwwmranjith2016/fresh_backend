@@ -4,6 +4,7 @@ import { authMiddleware } from '../middleware/auth.middleware';
 
 const router = Router();
 
+router.post('/guest', orderController.createGuestOrder.bind(orderController));
 router.post('/', authMiddleware, orderController.createOrder.bind(orderController));
 router.get('/', authMiddleware, orderController.getUserOrders.bind(orderController));
 router.get('/:id', authMiddleware, orderController.getOrderById.bind(orderController));

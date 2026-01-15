@@ -12,5 +12,4 @@ router.post('/login', auth_controller_1.default.login.bind(auth_controller_1.def
 router.post('/refresh', auth_controller_1.default.refreshToken.bind(auth_controller_1.default));
 router.post('/logout', auth_middleware_1.authMiddleware, auth_controller_1.default.logout.bind(auth_controller_1.default));
 router.put('/fcm-token', auth_middleware_1.authMiddleware, auth_controller_1.default.updateFcmToken.bind(auth_controller_1.default));
-router.get('/last', auth_controller_1.default.getLatestCustomer.bind(auth_controller_1.default));
 exports.default = router;

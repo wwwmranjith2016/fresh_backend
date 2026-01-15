@@ -41,7 +41,7 @@ app.get('/', (req: Request, res: Response) => {
       orders: '/api/orders',
       addresses: '/api/addresses',
       notifications: '/api/notifications',
-      admin: '/api/admin',
+      admin: '/api/admin'
     }
   });
 });

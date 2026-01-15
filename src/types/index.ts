@@ -41,6 +41,23 @@ export interface CreateOrderRequest {
   notes?: string;
 }
 
+export interface GuestOrderRequest {
+  phone: string;
+  name: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+  };
+  items: {
+    productId: string;
+    quantity: number;
+  }[];
+  paymentMethod: 'COD' | 'CARD' | 'UPI';
+  notes?: string;
+}
+
 export interface UpdateOrderStatusRequest {
   status: 'PLACED' | 'CONFIRMED' | 'PROCESSING' | 'PREPARED' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'CANCELLED';
 }
