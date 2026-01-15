@@ -3,11 +3,13 @@ import prisma from '../config/database';
 import { RegisterRequest, LoginRequest } from '../types';
 import { generateAccessToken, generateRefreshToken, JwtPayload } from '../utils/jwt.util';
 import { UserRole } from '@prisma/client';
+import { normalizePhone } from '../utils/phone.util';
 
 export class AuthService {
   async register(data: RegisterRequest) {
+    const phone = normalizePhone(data.phone);
     const existingUser = await prisma.user.findUnique({
-      where: { phone: data.phone },
+      where: { phone },
     });
 
     if (existingUser) {
@@ -18,7 +20,7 @@ export class AuthService {
 
     const user = await prisma.user.create({
       data: {
-        phone: data.phone,
+        phone,
         password: hashedPassword,
         name: data.name,
         email: data.email,
@@ -51,8 +53,9 @@ export class AuthService {
   }
 
   async login(data: LoginRequest) {
+    const phone = normalizePhone(data.phone);
     const user = await prisma.user.findUnique({
-      where: { phone: data.phone },
+      where: { phone },
     });
 
     if (!user) {
@@ -114,7 +117,8 @@ export class AuthService {
     return customer;
   }
 
-  async getUserByPhone(phone: string) {
+  async getUserByPhone(rawPhone: string) {
+    const phone = normalizePhone(rawPhone);
     const user = await prisma.user.findUnique({
       where: { phone },
       select: {

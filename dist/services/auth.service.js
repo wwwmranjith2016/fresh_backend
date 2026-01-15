@@ -8,10 +8,12 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const database_1 = __importDefault(require("../config/database"));
 const jwt_util_1 = require("../utils/jwt.util");
 const client_1 = require("@prisma/client");
+const phone_util_1 = require("../utils/phone.util");
 class AuthService {
     async register(data) {
+        const phone = (0, phone_util_1.normalizePhone)(data.phone);
         const existingUser = await database_1.default.user.findUnique({
-            where: { phone: data.phone },
+            where: { phone },
         });
         if (existingUser) {
             throw new Error('Phone number already registered');
@@ -19,7 +21,7 @@ class AuthService {
         const hashedPassword = await bcryptjs_1.default.hash(data.password, 10);
         const user = await database_1.default.user.create({
             data: {
-                phone: data.phone,
+                phone,
                 password: hashedPassword,
                 name: data.name,
                 email: data.email,
@@ -48,8 +50,9 @@ class AuthService {
         };
     }
     async login(data) {
+        const phone = (0, phone_util_1.normalizePhone)(data.phone);
         const user = await database_1.default.user.findUnique({
-            where: { phone: data.phone },
+            where: { phone },
         });
         if (!user) {
             throw new Error('Invalid phone number or password');
@@ -100,7 +103,8 @@ class AuthService {
         });
         return customer;
     }
-    async getUserByPhone(phone) {
+    async getUserByPhone(rawPhone) {
+        const phone = (0, phone_util_1.normalizePhone)(rawPhone);
         const user = await database_1.default.user.findUnique({
             where: { phone },
             select: {

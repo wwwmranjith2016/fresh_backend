@@ -3,11 +3,13 @@ import { CreateOrderRequest, UpdateOrderStatusRequest, GuestOrderRequest } from 
 import { generateOrderNumber } from '../utils/orderNumber.util';
 import notificationService from './notification.service';
 import { OrderStatus, Prisma } from '@prisma/client';
+import { normalizePhone } from '../utils/phone.util';
 
 export class OrderService {
   async createGuestOrder(data: GuestOrderRequest) {
+    const phone = normalizePhone(data.phone);
     let user = await prisma.user.findUnique({
-      where: { phone: data.phone },
+      where: { phone },
     });
 
     if (!user) {
@@ -17,7 +19,7 @@ export class OrderService {
 
       user = await prisma.user.create({
         data: {
-          phone: data.phone,
+          phone,
           name: data.name,
           password: '',
           role: 'CUSTOMER',
