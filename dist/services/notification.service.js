@@ -24,6 +24,24 @@ class NotificationService {
                     body,
                 },
                 data: data || {},
+                android: {
+                    priority: 'high',
+                    notification: {
+                        sound: 'default',
+                        channelId: data?.type === 'new_order' ? 'new_orders' : 'order_updates',
+                        priority: 'high',
+                        defaultVibrateTimings: true,
+                        visibility: 'public',
+                    },
+                },
+                apns: {
+                    payload: {
+                        aps: {
+                            sound: 'default',
+                            badge: 1,
+                        },
+                    },
+                },
             };
             const response = await firebase_1.messaging.send(message);
             console.log('Successfully sent push notification:', response);
@@ -34,7 +52,7 @@ class NotificationService {
             throw error;
         }
     }
-    async createNotification(userId, title, body, type = 'ORDER_STATUS', orderId) {
+    async createNotification(userId, title, body, type = 'ORDER_STATUS', orderId, notificationType) {
         const notification = await database_1.default.notification.create({
             data: {
                 userId,
@@ -50,7 +68,10 @@ class NotificationService {
         });
         if (user?.fcmToken) {
             try {
-                await this.sendPushNotification(user.fcmToken, title, body, { orderId });
+                await this.sendPushNotification(user.fcmToken, title, body, {
+                    orderId,
+                    type: notificationType || 'order_status'
+                });
             }
             catch (error) {
                 console.error('Failed to send push notification:', error);
@@ -98,7 +119,7 @@ class NotificationService {
         const title = '🔔 New Order Received!';
         const body = `Order #${order.orderNumber} from ${order.customer.name}`;
         for (const admin of admins) {
-            await this.createNotification(admin.id, title, body, 'ORDER_STATUS', orderId);
+            await this.createNotification(admin.id, title, body, 'ORDER_STATUS', orderId, 'new_order');
         }
     }
     async getUserNotifications(userId) {

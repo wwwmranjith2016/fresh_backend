@@ -22,6 +22,24 @@ export class NotificationService {
           body,
         },
         data: data || {},
+        android: {
+          priority: 'high' as const,
+          notification: {
+            sound: 'default',
+            channelId: data?.type === 'new_order' ? 'new_orders' : 'order_updates',
+            priority: 'high' as const,
+            defaultVibrateTimings: true,
+            visibility: 'public' as const,
+          },
+        },
+        apns: {
+          payload: {
+            aps: {
+              sound: 'default',
+              badge: 1,
+            },
+          },
+        },
       };
 
       const response = await messaging.send(message);
@@ -38,7 +56,8 @@ export class NotificationService {
     title: string,
     body: string,
     type: NotificationType = 'ORDER_STATUS',
-    orderId?: string
+    orderId?: string,
+    notificationType?: string
   ) {
     const notification = await prisma.notification.create({
       data: {
@@ -57,7 +76,10 @@ export class NotificationService {
 
     if (user?.fcmToken) {
       try {
-        await this.sendPushNotification(user.fcmToken, title, body, { orderId });
+        await this.sendPushNotification(user.fcmToken, title, body, { 
+          orderId, 
+          type: notificationType || 'order_status' 
+        });
       } catch (error) {
         console.error('Failed to send push notification:', error);
       }
@@ -115,7 +137,7 @@ export class NotificationService {
     const body = `Order #${order.orderNumber} from ${order.customer.name}`;
 
     for (const admin of admins) {
-      await this.createNotification(admin.id, title, body, 'ORDER_STATUS', orderId);
+      await this.createNotification(admin.id, title, body, 'ORDER_STATUS', orderId, 'new_order');
     }
   }
 
