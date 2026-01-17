@@ -23,7 +23,14 @@ class OrderService {
                     name: data.name,
                     password: '',
                     role: 'CUSTOMER',
+                    fcmToken: data.fcmToken,
                 },
+            });
+        }
+        else if (data.fcmToken) {
+            await database_1.default.user.update({
+                where: { id: user.id },
+                data: { fcmToken: data.fcmToken },
             });
         }
         let addressId = data.addressId;
@@ -59,6 +66,12 @@ class OrderService {
         return { order, user };
     }
     async createOrder(userId, data) {
+        if (data.fcmToken) {
+            await database_1.default.user.update({
+                where: { id: userId },
+                data: { fcmToken: data.fcmToken },
+            });
+        }
         let subtotal = 0;
         for (const item of data.items) {
             const product = await database_1.default.product.findUnique({
@@ -113,8 +126,17 @@ class OrderService {
                 address: true,
             },
         });
-        await notification_service_1.default.sendOrderStatusNotification(order.id, client_1.OrderStatus.PLACED);
-        await notification_service_1.default.sendNewOrderNotificationToAdmins(order.id);
+        // Send notifications in background to ensure they don't block and both are attempted
+        Promise.allSettled([
+            notification_service_1.default.sendOrderStatusNotification(order.id, client_1.OrderStatus.PLACED),
+            notification_service_1.default.sendNewOrderNotificationToAdmins(order.id)
+        ]).then(results => {
+            results.forEach((result, index) => {
+                if (result.status === 'rejected') {
+                    console.error(`[OrderService] ${index === 0 ? 'Customer' : 'Admin'} notification failed:`, result.reason);
+                }
+            });
+        });
         return order;
     }
     async getUserOrders(userId) {
@@ -180,6 +202,7 @@ class OrderService {
         return orders;
     }
     async updateOrderStatus(orderId, status) {
+        console.log(`Starting order status update for order ${orderId} to status ${status}`);
         const order = await database_1.default.order.update({
             where: { id: orderId },
             data: {
@@ -202,7 +225,10 @@ class OrderService {
                 },
             },
         });
+        console.log(`Order status updated successfully. Customer ID: ${order.customerId}`);
+        console.log(`Sending order status notification to customer ${order.customerId}`);
         await notification_service_1.default.sendOrderStatusNotification(orderId, status);
+        console.log(`Order status notification sent to customer ${order.customerId}`);
         return order;
     }
     async cancelOrder(orderId, userId) {

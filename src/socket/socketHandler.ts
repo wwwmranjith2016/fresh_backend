@@ -60,11 +60,15 @@ export class SocketHandler {
     const socketId = this.userSockets.get(customerId);
     if (socketId) {
       this.io.to(socketId).emit('order:status-changed', order);
+      console.log(`Order status change emitted to customer ${customerId}:`, order);
+    } else {
+      console.log(`No active socket connection for customer ${customerId}`);
     }
   }
 
   public emitNewOrderToAdmins(order: any) {
     this.io.to('admins').emit('order:new', order);
+    console.log('New order notification emitted to admins:', order);
   }
 
   public getIO(): SocketIOServer {

@@ -21,7 +21,13 @@ export class OrderService {
           name: data.name,
           password: '',
           role: 'CUSTOMER',
+          fcmToken: data.fcmToken,
         },
+      });
+    } else if (data.fcmToken) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { fcmToken: data.fcmToken },
       });
     }
 
@@ -61,6 +67,13 @@ export class OrderService {
     return { order, user };
   }
   async createOrder(userId: string, data: CreateOrderRequest) {
+    if (data.fcmToken) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { fcmToken: data.fcmToken },
+      });
+    }
+
     let subtotal = 0;
 
     for (const item of data.items) {
@@ -126,8 +139,17 @@ export class OrderService {
       },
     });
 
-    await notificationService.sendOrderStatusNotification(order.id, OrderStatus.PLACED);
-    await notificationService.sendNewOrderNotificationToAdmins(order.id);
+    // Send notifications in background to ensure they don't block and both are attempted
+    Promise.allSettled([
+      notificationService.sendOrderStatusNotification(order.id, OrderStatus.PLACED),
+      notificationService.sendNewOrderNotificationToAdmins(order.id)
+    ]).then(results => {
+      results.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          console.error(`[OrderService] ${index === 0 ? 'Customer' : 'Admin'} notification failed:`, result.reason);
+        }
+      });
+    });
 
     return order;
   }
@@ -203,6 +225,8 @@ export class OrderService {
   }
 
   async updateOrderStatus(orderId: string, status: OrderStatus) {
+    console.log(`Starting order status update for order ${orderId} to status ${status}`);
+    
     const order = await prisma.order.update({
       where: { id: orderId },
       data: {
@@ -225,8 +249,12 @@ export class OrderService {
         },
       },
     });
-
+    
+    console.log(`Order status updated successfully. Customer ID: ${order.customerId}`);
+    
+    console.log(`Sending order status notification to customer ${order.customerId}`);
     await notificationService.sendOrderStatusNotification(orderId, status);
+    console.log(`Order status notification sent to customer ${order.customerId}`);
 
     return order;
   }

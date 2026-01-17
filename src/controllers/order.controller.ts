@@ -152,20 +152,27 @@ export class OrderController {
 
   async updateOrderStatus(req: AuthRequest, res: Response) {
     try {
+      console.log(`[OrderController] Update order status request received for order ${req.params.id}`);
+      
       if (req.user?.role !== 'ADMIN') {
+        console.log(`[OrderController] Unauthorized access attempt by user ${req.user?.id}`);
         return sendError(res, 'Unauthorized: Admin access required', 403);
       }
 
       const { id } = req.params;
       const { status } = req.body;
 
+      console.log(`[OrderController] Updating order ${id} to status ${status}`);
+      
       if (!status) {
         return sendError(res, 'Status is required', 400);
       }
 
       const order = await orderService.updateOrderStatus(id, status as OrderStatus);
+      console.log(`[OrderController] Order status updated successfully for order ${id}`);
       return sendSuccess(res, order, 'Order status updated successfully');
     } catch (error: any) {
+      console.error(`[OrderController] Error updating order status: ${error.message}`);
       return sendError(res, error.message || 'Failed to update order status', 400);
     }
   }

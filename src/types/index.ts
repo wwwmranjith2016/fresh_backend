@@ -39,6 +39,7 @@ export interface CreateOrderRequest {
   }[];
   paymentMethod: 'COD' | 'CARD' | 'UPI';
   notes?: string;
+  fcmToken?: string;
 }
 
 export interface GuestOrderRequest {
@@ -57,6 +58,7 @@ export interface GuestOrderRequest {
   }[];
   paymentMethod: 'COD' | 'CARD' | 'UPI';
   notes?: string;
+  fcmToken?: string;
 }
 
 export interface UpdateOrderStatusRequest {

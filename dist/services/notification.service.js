@@ -24,6 +24,24 @@ class NotificationService {
                     body,
                 },
                 data: data || {},
+                android: {
+                    priority: 'high',
+                    notification: {
+                        sound: 'default',
+                        channelId: data?.type === 'new_order' ? 'new_orders' : 'order_updates',
+                        priority: 'high',
+                        defaultVibrateTimings: true,
+                        visibility: 'public',
+                    },
+                },
+                apns: {
+                    payload: {
+                        aps: {
+                            sound: 'default',
+                            badge: 1,
+                        },
+                    },
+                },
             };
             const response = await firebase_1.messaging.send(message);
             console.log('Successfully sent push notification:', response);
@@ -34,7 +52,7 @@ class NotificationService {
             throw error;
         }
     }
-    async createNotification(userId, title, body, type = 'ORDER_STATUS', orderId) {
+    async createNotification(userId, title, body, type = 'ORDER_STATUS', orderId, notificationType) {
         const notification = await database_1.default.notification.create({
             data: {
                 userId,
@@ -49,16 +67,39 @@ class NotificationService {
             select: { fcmToken: true },
         });
         if (user?.fcmToken) {
+            console.log(`[NotificationService] Attempting to send push notification to user ${userId} with token ${user.fcmToken.substring(0, 10)}...`);
             try {
-                await this.sendPushNotification(user.fcmToken, title, body, { orderId });
+                const response = await this.sendPushNotification(user.fcmToken, title, body, {
+                    orderId,
+                    type: notificationType || 'order_status'
+                });
+                if (response) {
+                    console.log(`[NotificationService] Push notification successfully sent to user ${userId}`);
+                }
+                else {
+                    console.log(`[NotificationService] Push notification skipped for user ${userId} (check Firebase config logs)`);
+                }
             }
             catch (error) {
-                console.error('Failed to send push notification:', error);
+                console.error(`[NotificationService] Failed to send push notification to user ${userId}:`, error.message);
+                // Clear FCM token if it's invalid or unregistered
+                if (error.code === 'messaging/registration-token-not-registered' ||
+                    error.code === 'messaging/invalid-registration-token') {
+                    console.log(`[NotificationService] Clearing invalid FCM token for user ${userId}`);
+                    await database_1.default.user.update({
+                        where: { id: userId },
+                        data: { fcmToken: null },
+                    });
+                }
             }
+        }
+        else {
+            console.log(`[NotificationService] No FCM token found for user ${userId}, skipping push notification`);
         }
         return notification;
     }
     async sendOrderStatusNotification(orderId, status) {
+        console.log(`[NotificationService] Finding order ${orderId} for status notification`);
         const order = await database_1.default.order.findUnique({
             where: { id: orderId },
             include: {
@@ -66,8 +107,10 @@ class NotificationService {
             },
         });
         if (!order) {
+            console.error(`[NotificationService] Order ${orderId} not found`);
             throw new Error('Order not found');
         }
+        console.log(`[NotificationService] Order found: #${order.orderNumber}, Customer: ${order.customerId}, FCM Token: ${order.customer.fcmToken ? 'present' : 'missing'}`);
         const statusMessages = {
             PLACED: `Your order #${order.orderNumber} has been placed successfully`,
             CONFIRMED: `Your order #${order.orderNumber} has been confirmed and is being processed`,
@@ -79,26 +122,41 @@ class NotificationService {
         };
         const title = status === 'PLACED' ? 'Order Placed' : 'Order Update';
         const body = statusMessages[status];
+        console.log(`[NotificationService] Creating notification for customer ${order.customerId}: ${title} - ${body}`);
         await this.createNotification(order.customerId, title, body, 'ORDER_STATUS', orderId);
+        console.log(`[NotificationService] Notification created successfully`);
     }
     async sendNewOrderNotificationToAdmins(orderId) {
-        const order = await database_1.default.order.findUnique({
-            where: { id: orderId },
-            include: {
-                customer: { select: { name: true } },
-            },
-        });
-        if (!order) {
-            throw new Error('Order not found');
+        try {
+            const order = await database_1.default.order.findUnique({
+                where: { id: orderId },
+                include: {
+                    customer: { select: { name: true } },
+                },
+            });
+            if (!order) {
+                console.error(`[NotificationService] Order ${orderId} not found for admin notification`);
+                return;
+            }
+            const admins = await database_1.default.user.findMany({
+                where: { role: 'ADMIN' },
+                select: { id: true, fcmToken: true },
+            });
+            console.log(`[NotificationService] Found ${admins.length} admins to notify for order #${order.orderNumber}`);
+            const title = '🔔 New Order Received!';
+            const body = `Order #${order.orderNumber} from ${order.customer.name}`;
+            for (const admin of admins) {
+                try {
+                    await this.createNotification(admin.id, title, body, 'ORDER_STATUS', orderId, 'new_order');
+                    console.log(`[NotificationService] Notification sent to admin ${admin.id}`);
+                }
+                catch (error) {
+                    console.error(`[NotificationService] Failed to notify admin ${admin.id}:`, error.message);
+                }
+            }
         }
-        const admins = await database_1.default.user.findMany({
-            where: { role: 'ADMIN' },
-            select: { id: true, fcmToken: true },
-        });
-        const title = '🔔 New Order Received!';
-        const body = `Order #${order.orderNumber} from ${order.customer.name}`;
-        for (const admin of admins) {
-            await this.createNotification(admin.id, title, body, 'ORDER_STATUS', orderId);
+        catch (error) {
+            console.error(`[NotificationService] Error in sendNewOrderNotificationToAdmins:`, error.message);
         }
     }
     async getUserNotifications(userId) {

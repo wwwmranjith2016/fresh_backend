@@ -22,6 +22,24 @@ export class NotificationService {
           body,
         },
         data: data || {},
+        android: {
+          priority: 'high' as const,
+          notification: {
+            sound: 'default',
+            channelId: data?.type === 'new_order' ? 'new_orders' : 'order_updates',
+            priority: 'high' as const,
+            defaultVibrateTimings: true,
+            visibility: 'public' as const,
+          },
+        },
+        apns: {
+          payload: {
+            aps: {
+              sound: 'default',
+              badge: 1,
+            },
+          },
+        },
       };
 
       const response = await messaging.send(message);
@@ -38,7 +56,8 @@ export class NotificationService {
     title: string,
     body: string,
     type: NotificationType = 'ORDER_STATUS',
-    orderId?: string
+    orderId?: string,
+    notificationType?: string
   ) {
     const notification = await prisma.notification.create({
       data: {
@@ -56,17 +75,38 @@ export class NotificationService {
     });
 
     if (user?.fcmToken) {
+      console.log(`[NotificationService] Attempting to send push notification to user ${userId} with token ${user.fcmToken.substring(0, 10)}...`);
       try {
-        await this.sendPushNotification(user.fcmToken, title, body, { orderId });
-      } catch (error) {
-        console.error('Failed to send push notification:', error);
+        const response = await this.sendPushNotification(user.fcmToken, title, body, { 
+          orderId, 
+          type: notificationType || 'order_status' 
+        });
+        if (response) {
+          console.log(`[NotificationService] Push notification successfully sent to user ${userId}`);
+        } else {
+          console.log(`[NotificationService] Push notification skipped for user ${userId} (check Firebase config logs)`);
+        }
+      } catch (error: any) {
+        console.error(`[NotificationService] Failed to send push notification to user ${userId}:`, error.message);
+        // Clear FCM token if it's invalid or unregistered
+        if (error.code === 'messaging/registration-token-not-registered' || 
+            error.code === 'messaging/invalid-registration-token') {
+          console.log(`[NotificationService] Clearing invalid FCM token for user ${userId}`);
+          await prisma.user.update({
+            where: { id: userId },
+            data: { fcmToken: null },
+          });
+        }
       }
+    } else {
+      console.log(`[NotificationService] No FCM token found for user ${userId}, skipping push notification`);
     }
 
     return notification;
   }
 
   async sendOrderStatusNotification(orderId: string, status: OrderStatus) {
+    console.log(`[NotificationService] Finding order ${orderId} for status notification`);
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
@@ -75,8 +115,11 @@ export class NotificationService {
     });
 
     if (!order) {
+      console.error(`[NotificationService] Order ${orderId} not found`);
       throw new Error('Order not found');
     }
+
+    console.log(`[NotificationService] Order found: #${order.orderNumber}, Customer: ${order.customerId}, FCM Token: ${order.customer.fcmToken ? 'present' : 'missing'}`);
 
     const statusMessages: Record<OrderStatus, string> = {
       PLACED: `Your order #${order.orderNumber} has been placed successfully`,
@@ -90,32 +133,46 @@ export class NotificationService {
 
     const title = status === 'PLACED' ? 'Order Placed' : 'Order Update';
     const body = statusMessages[status];
-
+    
+    console.log(`[NotificationService] Creating notification for customer ${order.customerId}: ${title} - ${body}`);
     await this.createNotification(order.customerId, title, body, 'ORDER_STATUS', orderId);
+    console.log(`[NotificationService] Notification created successfully`);
   }
 
   async sendNewOrderNotificationToAdmins(orderId: string) {
-    const order = await prisma.order.findUnique({
-      where: { id: orderId },
-      include: {
-        customer: { select: { name: true } },
-      },
-    });
+    try {
+      const order = await prisma.order.findUnique({
+        where: { id: orderId },
+        include: {
+          customer: { select: { name: true } },
+        },
+      });
 
-    if (!order) {
-      throw new Error('Order not found');
-    }
+      if (!order) {
+        console.error(`[NotificationService] Order ${orderId} not found for admin notification`);
+        return;
+      }
 
-    const admins = await prisma.user.findMany({
-      where: { role: 'ADMIN' },
-      select: { id: true, fcmToken: true },
-    });
+      const admins = await prisma.user.findMany({
+        where: { role: 'ADMIN' },
+        select: { id: true, fcmToken: true },
+      });
 
-    const title = '🔔 New Order Received!';
-    const body = `Order #${order.orderNumber} from ${order.customer.name}`;
+      console.log(`[NotificationService] Found ${admins.length} admins to notify for order #${order.orderNumber}`);
 
-    for (const admin of admins) {
-      await this.createNotification(admin.id, title, body, 'ORDER_STATUS', orderId);
+      const title = '🔔 New Order Received!';
+      const body = `Order #${order.orderNumber} from ${order.customer.name}`;
+
+      for (const admin of admins) {
+        try {
+          await this.createNotification(admin.id, title, body, 'ORDER_STATUS', orderId, 'new_order');
+          console.log(`[NotificationService] Notification sent to admin ${admin.id}`);
+        } catch (error: any) {
+          console.error(`[NotificationService] Failed to notify admin ${admin.id}:`, error.message);
+        }
+      }
+    } catch (error: any) {
+      console.error(`[NotificationService] Error in sendNewOrderNotificationToAdmins:`, error.message);
     }
   }
 
