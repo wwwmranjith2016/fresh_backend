@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+enum OrderStatus {
+  PLACED
+  CONFIRMED
+  PROCESSING
+  PREPARED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  COD
+  CARD
+  UPI
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum NotificationType {
+  ORDER_STATUS
+  PROMOTIONAL
+  SYSTEM
+}
+
+model User {
+  id            String         @id @default(uuid())
+  phone         String         @unique
+  password      String
+  name          String
+  email         String?
+  role          UserRole       @default(CUSTOMER)
+  fcmToken      String?        @map("fcm_token")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  
+  addresses     Address[]
+  orders        Order[]
+  notifications Notification[]
+  
+  @@map("users")
+}
+
+model Address {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  label       String
+  street      String
+  city        String
+  state       String
+  zipCode     String    @map("zip_code")
+  latitude    Float?
+  longitude   Float?
+  isDefault   Boolean   @default(false) @map("is_default")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders      Order[]
+  
+  @@map("addresses")
+}
+
+model Product {
+  id          String      @id @default(uuid())
+  name        String
+  description String
+  imageUrl    String      @map("image_url")
+  price       Decimal     @db.Decimal(10, 2)
+  category    String
+  unit        String
+  available   Boolean     @default(true)
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  
+  orderItems  OrderItem[]
+  
+  @@map("products")
+}
+
+model Order {
+  id                    String        @id @default(uuid())
+  orderNumber           String        @unique @map("order_number")
+  customerId            String        @map("customer_id")
+  addressId             String        @map("address_id")
+  status                OrderStatus   @default(PLACED)
+  subtotal              Decimal       @db.Decimal(10, 2)
+  deliveryFee           Decimal       @default(0) @map("delivery_fee") @db.Decimal(10, 2)
+  tax                   Decimal       @default(0) @db.Decimal(10, 2)
+  total                 Decimal       @db.Decimal(10, 2)
+  paymentMethod         PaymentMethod @map("payment_method")
+  paymentStatus         PaymentStatus @default(PENDING) @map("payment_status")
+  notes                 String?
+  estimatedDeliveryTime DateTime?     @map("estimated_delivery_time")
+  deliveredAt           DateTime?     @map("delivered_at")
+  createdAt             DateTime      @default(now()) @map("created_at")
+  updatedAt             DateTime      @updatedAt @map("updated_at")
+  
+  customer              User          @relation(fields: [customerId], references: [id])
+  address               Address       @relation(fields: [addressId], references: [id])
+  items                 OrderItem[]
+  notifications         Notification[]
+  
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String   @id @default(uuid())
+  orderId     String   @map("order_id")
+  productId   String   @map("product_id")
+  quantity    Int
+  unitPrice   Decimal  @map("unit_price") @db.Decimal(10, 2)
+  subtotal    Decimal  @db.Decimal(10, 2)
+  
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id])
+  
+  @@map("order_items")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String           @map("user_id")
+  orderId   String?          @map("order_id")
+  title     String
+  body      String
+  type      NotificationType @default(ORDER_STATUS)
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now()) @map("created_at")
+  
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order     Order?           @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  
+  @@map("notifications")
+}
