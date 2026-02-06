@@ -1,6 +1,7 @@
 import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import http from 'http';
+import path from 'path';
 import { config } from './config/environment';
 import prisma from './config/database';
 import { initializeSocket } from './socket/socketHandler';
@@ -21,6 +22,9 @@ initializeSocket(server);
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.get('/health', (req: Request, res: Response) => {
   res.json({ 

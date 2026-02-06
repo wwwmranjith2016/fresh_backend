@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import productService from '../services/product.service';
 import { sendSuccess, sendError } from '../utils/response.util';
 import { CreateProductRequest, AuthRequest } from '../types';
+import { getFileUrl } from '../utils/fileUpload.util';
 
 export class ProductController {
   async createProduct(req: AuthRequest, res: Response) {
@@ -11,6 +12,13 @@ export class ProductController {
       }
 
       const data: CreateProductRequest = req.body;
+
+      // Handle image upload
+      if (req.file) {
+        data.imageUrl = getFileUrl(req.file.filename);
+      } else {
+        return sendError(res, 'Product image is required', 400);
+      }
 
       // Validate required fields
       if (!data.name || !data.description || !data.price || !data.category || !data.unit) {
@@ -130,6 +138,11 @@ export class ProductController {
 
       const { id } = req.params;
       const data = req.body;
+
+      // Handle image upload if a new file is provided
+      if (req.file) {
+        data.imageUrl = getFileUrl(req.file.filename);
+      }
 
       const product = await productService.updateProduct(id, data);
       return sendSuccess(res, product, 'Product updated successfully');

@@ -7,6 +7,7 @@ export interface AuthRequest extends Request {
     phone: string;
     role: UserRole;
   };
+  file?: Express.Multer.File;
 }
 
 export interface LoginRequest {

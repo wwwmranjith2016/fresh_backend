@@ -7,6 +7,7 @@ exports.server = exports.app = void 0;
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const http_1 = __importDefault(require("http"));
+const path_1 = __importDefault(require("path"));
 const environment_1 = require("./config/environment");
 const database_1 = __importDefault(require("./config/database"));
 const socketHandler_1 = require("./socket/socketHandler");
@@ -25,6 +26,8 @@ exports.server = server;
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
+// Serve static files from uploads directory
+app.use('/uploads', express_1.default.static(path_1.default.join(process.cwd(), 'uploads')));
 app.get('/health', (req, res) => {
     res.json({
         status: 'OK',
