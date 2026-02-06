@@ -9,8 +9,8 @@ export class ProductService {
         description: data.description,
         imageUrl: data.imageUrl,
         price: data.price,
-        category: data.category,
-        unit: data.unit,
+        categoryId: data.categoryId,
+        unitId: data.unitId,
         discountPercentage: data.discountPercentage,
         discountPrice: data.discountPrice,
         offerTitle: data.offerTitle,
@@ -31,7 +31,8 @@ export class ProductService {
   async getAllProducts(filters?: {
     available?: boolean;
     isFeatured?: boolean;
-    category?: string;
+    categoryId?: string;
+    unitId?: string;
     tags?: string[];
     minPrice?: number;
     maxPrice?: number;
@@ -47,8 +48,12 @@ export class ProductService {
       where.isFeatured = filters.isFeatured;
     }
 
-    if (filters?.category) {
-      where.category = filters.category;
+    if (filters?.categoryId) {
+      where.categoryId = filters.categoryId;
+    }
+
+    if (filters?.unitId) {
+      where.unitId = filters.unitId;
     }
 
     if (filters?.tags && filters.tags.length > 0) {
@@ -83,6 +88,10 @@ export class ProductService {
 
     const products = await prisma.product.findMany({
       where,
+      include: {
+        category: true,
+        unit: true,
+      },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -92,6 +101,10 @@ export class ProductService {
   async getProductById(id: string) {
     const product = await prisma.product.findUnique({
       where: { id },
+      include: {
+        category: true,
+        unit: true,
+      },
     });
 
     if (!product) {

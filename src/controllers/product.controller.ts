@@ -21,8 +21,8 @@ export class ProductController {
       }
 
       // Validate required fields
-      if (!data.name || !data.description || !data.price || !data.category || !data.unit) {
-        return sendError(res, 'Required fields: name, description, price, category, unit', 400);
+      if (!data.name || !data.description || !data.price || !data.categoryId || !data.unitId) {
+        return sendError(res, 'Required fields: name, description, price, categoryId, unitId', 400);
       }
 
       // Validate price is positive
@@ -76,7 +76,8 @@ export class ProductController {
       const {
         available,
         isFeatured,
-        category,
+        categoryId,
+        unitId,
         tags,
         minPrice,
         maxPrice,
@@ -93,8 +94,12 @@ export class ProductController {
         filters.isFeatured = isFeatured === 'true';
       }
 
-      if (category) {
-        filters.category = category as string;
+      if (categoryId) {
+        filters.categoryId = categoryId as string;
+      }
+
+      if (unitId) {
+        filters.unitId = unitId as string;
       }
 
       if (tags) {

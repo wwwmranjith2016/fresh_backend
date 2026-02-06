@@ -28,8 +28,8 @@ export interface CreateProductRequest {
   description: string;
   imageUrl: string;
   price: number;
-  category: string;
-  unit: string;
+  categoryId: string;
+  unitId: string;
   discountPercentage?: number;
   discountPrice?: number;
   offerTitle?: string;
@@ -41,6 +41,17 @@ export interface CreateProductRequest {
   minOrderQuantity?: number;
   maxOrderQuantity?: number;
   tags?: string[];
+}
+
+export interface CreateCategoryRequest {
+  name: string;
+  description?: string;
+}
+
+export interface CreateUnitRequest {
+  name: string;
+  symbol?: string;
+  description?: string;
 }
 
 export interface CreateOrderRequest {
