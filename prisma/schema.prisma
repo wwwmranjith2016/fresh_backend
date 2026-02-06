@@ -78,19 +78,30 @@ model Address {
 }
 
 model Product {
-  id          String      @id @default(uuid())
-  name        String
-  description String
-  imageUrl    String      @map("image_url")
-  price       Decimal     @db.Decimal(10, 2)
-  category    String
-  unit        String
-  available   Boolean     @default(true)
-  createdAt   DateTime    @default(now()) @map("created_at")
-  updatedAt   DateTime    @updatedAt @map("updated_at")
-  
-  orderItems  OrderItem[]
-  
+  id                  String      @id @default(uuid())
+  name                String
+  description         String
+  imageUrl            String      @map("image_url")
+  price               Decimal     @db.Decimal(10, 2)
+  category            String
+  unit                String
+  available           Boolean     @default(true)
+  discountPercentage  Decimal?    @map("discount_percentage") @db.Decimal(5, 2)
+  discountPrice       Decimal?    @map("discount_price") @db.Decimal(10, 2)
+  offerTitle          String?     @map("offer_title")
+  offerDescription    String?     @map("offer_description")
+  offerValidFrom      DateTime?   @map("offer_valid_from")
+  offerValidUntil     DateTime?   @map("offer_valid_until")
+  isFeatured          Boolean     @default(false) @map("is_featured")
+  stockQuantity       Int?        @default(0) @map("stock_quantity")
+  minOrderQuantity    Int?        @default(1) @map("min_order_quantity")
+  maxOrderQuantity    Int?        @map("max_order_quantity")
+  tags                String[]    @default([])
+  createdAt           DateTime    @default(now()) @map("created_at")
+  updatedAt           DateTime    @updatedAt @map("updated_at")
+
+  orderItems          OrderItem[]
+
   @@map("products")
 }
 

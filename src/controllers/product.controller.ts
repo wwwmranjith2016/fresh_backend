@@ -12,8 +12,48 @@ export class ProductController {
 
       const data: CreateProductRequest = req.body;
 
+      // Validate required fields
       if (!data.name || !data.description || !data.price || !data.category || !data.unit) {
-        return sendError(res, 'All product fields are required', 400);
+        return sendError(res, 'Required fields: name, description, price, category, unit', 400);
+      }
+
+      // Validate price is positive
+      if (data.price <= 0) {
+        return sendError(res, 'Price must be greater than 0', 400);
+      }
+
+      // Validate discount percentage if provided
+      if (data.discountPercentage !== undefined && (data.discountPercentage < 0 || data.discountPercentage > 100)) {
+        return sendError(res, 'Discount percentage must be between 0 and 100', 400);
+      }
+
+      // Validate discount price if provided
+      if (data.discountPrice !== undefined && data.discountPrice < 0) {
+        return sendError(res, 'Discount price must be greater than or equal to 0', 400);
+      }
+
+      // Validate stock quantity if provided
+      if (data.stockQuantity !== undefined && data.stockQuantity < 0) {
+        return sendError(res, 'Stock quantity must be greater than or equal to 0', 400);
+      }
+
+      // Validate min order quantity if provided
+      if (data.minOrderQuantity !== undefined && data.minOrderQuantity < 1) {
+        return sendError(res, 'Minimum order quantity must be at least 1', 400);
+      }
+
+      // Validate max order quantity if provided
+      if (data.maxOrderQuantity !== undefined && data.maxOrderQuantity < 1) {
+        return sendError(res, 'Maximum order quantity must be at least 1', 400);
+      }
+
+      // Validate offer dates if both provided
+      if (data.offerValidFrom && data.offerValidUntil) {
+        const validFrom = new Date(data.offerValidFrom);
+        const validUntil = new Date(data.offerValidUntil);
+        if (validFrom >= validUntil) {
+          return sendError(res, 'Offer valid from date must be before valid until date', 400);
+        }
       }
 
       const product = await productService.createProduct(data);
@@ -25,10 +65,47 @@ export class ProductController {
 
   async getAllProducts(req: Request, res: Response) {
     try {
-      const { available } = req.query;
-      const availableFilter = available === 'true' ? true : available === 'false' ? false : undefined;
+      const {
+        available,
+        isFeatured,
+        category,
+        tags,
+        minPrice,
+        maxPrice,
+        hasDiscount,
+      } = req.query;
 
-      const products = await productService.getAllProducts(availableFilter);
+      const filters: any = {};
+
+      if (available !== undefined) {
+        filters.available = available === 'true' ? true : available === 'false' ? false : undefined;
+      }
+
+      if (isFeatured !== undefined) {
+        filters.isFeatured = isFeatured === 'true';
+      }
+
+      if (category) {
+        filters.category = category as string;
+      }
+
+      if (tags) {
+        filters.tags = Array.isArray(tags) ? tags as string[] : [tags as string];
+      }
+
+      if (minPrice) {
+        filters.minPrice = parseFloat(minPrice as string);
+      }
+
+      if (maxPrice) {
+        filters.maxPrice = parseFloat(maxPrice as string);
+      }
+
+      if (hasDiscount !== undefined) {
+        filters.hasDiscount = hasDiscount === 'true';
+      }
+
+      const products = await productService.getAllProducts(filters);
       return sendSuccess(res, products);
     } catch (error: any) {
       return sendError(res, error.message || 'Failed to fetch products', 400);

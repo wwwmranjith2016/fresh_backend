@@ -29,6 +29,17 @@ export interface CreateProductRequest {
   price: number;
   category: string;
   unit: string;
+  discountPercentage?: number;
+  discountPrice?: number;
+  offerTitle?: string;
+  offerDescription?: string;
+  offerValidFrom?: string;
+  offerValidUntil?: string;
+  isFeatured?: boolean;
+  stockQuantity?: number;
+  minOrderQuantity?: number;
+  maxOrderQuantity?: number;
+  tags?: string[];
 }
 
 export interface CreateOrderRequest {
