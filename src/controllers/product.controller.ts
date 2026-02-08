@@ -13,6 +13,30 @@ export class ProductController {
 
       const data: CreateProductRequest = req.body;
 
+      // Convert string values to correct types
+      data.price = parseFloat(data.price as unknown as string);
+      if (data.discountPercentage !== undefined) {
+        data.discountPercentage = parseFloat(data.discountPercentage as unknown as string);
+      }
+      if (data.discountPrice !== undefined) {
+        data.discountPrice = parseFloat(data.discountPrice as unknown as string);
+      }
+      if (data.stockQuantity !== undefined) {
+        data.stockQuantity = parseInt(data.stockQuantity as unknown as string, 10);
+      }
+      if (data.minOrderQuantity !== undefined) {
+        data.minOrderQuantity = parseInt(data.minOrderQuantity as unknown as string, 10);
+      }
+      if (data.maxOrderQuantity !== undefined) {
+        data.maxOrderQuantity = parseInt(data.maxOrderQuantity as unknown as string, 10);
+      }
+      if (data.isFeatured !== undefined) {
+        data.isFeatured = (data.isFeatured as unknown as string) === 'true';
+      }
+      if (data.available !== undefined) {
+        data.available = (data.available as unknown as string) === 'true';
+      }
+
       // Handle image upload
       if (req.file) {
         data.imageUrl = getFileUrl(req.file.filename);
