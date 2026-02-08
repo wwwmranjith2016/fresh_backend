@@ -30,6 +30,7 @@ export interface CreateProductRequest {
   price: number;
   categoryId: string;
   unitId: string;
+  available?: boolean;
   discountPercentage?: number;
   discountPrice?: number;
   offerTitle?: string;
