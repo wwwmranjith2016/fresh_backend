@@ -33,10 +33,18 @@ export class ProductController {
         data.displayOrder = parseInt(data.displayOrder as unknown as string, 10);
       }
       if (data.isFeatured !== undefined) {
-        data.isFeatured = (data.isFeatured as unknown as string) === 'true';
+        // Handle both boolean and string values
+        if (typeof data.isFeatured === 'string') {
+          data.isFeatured = data.isFeatured === 'true';
+        }
+        // If it's already a boolean, keep it as is
       }
       if (data.available !== undefined) {
-        data.available = (data.available as unknown as string) === 'true';
+        // Handle both boolean and string values
+        if (typeof data.available === 'string') {
+          data.available = data.available === 'true';
+        }
+        // If it's already a boolean, keep it as is
       }
 
       // Validate required fields
@@ -205,10 +213,18 @@ export class ProductController {
         data.displayOrder = parseInt(data.displayOrder as unknown as string, 10);
       }
       if (data.isFeatured !== undefined) {
-        data.isFeatured = (data.isFeatured as unknown as string) === 'true';
+        // Handle both boolean and string values
+        if (typeof data.isFeatured === 'string') {
+          data.isFeatured = data.isFeatured === 'true';
+        }
+        // If it's already a boolean, keep it as is
       }
       if (data.available !== undefined) {
-        data.available = (data.available as unknown as string) === 'true';
+        // Handle both boolean and string values
+        if (typeof data.available === 'string') {
+          data.available = data.available === 'true';
+        }
+        // If it's already a boolean, keep it as is
       }
 
       const product = await productService.updateProduct(id, data);
