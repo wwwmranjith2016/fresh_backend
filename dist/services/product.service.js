@@ -13,8 +13,8 @@ class ProductService {
                 description: data.description,
                 imageUrl: data.imageUrl,
                 price: data.price,
-                category: data.category,
-                unit: data.unit,
+                categoryId: data.categoryId,
+                unitId: data.unitId,
                 discountPercentage: data.discountPercentage,
                 discountPrice: data.discountPrice,
                 offerTitle: data.offerTitle,
@@ -31,6 +31,9 @@ class ProductService {
         return product;
     }
     async getAllProducts(filters) {
+        // DEBUG: Log the filters
+        console.log('=== ProductService Filters ===');
+        console.log('filters:', JSON.stringify(filters, null, 2));
         const where = {};
         if (filters?.available !== undefined) {
             where.available = filters.available;
@@ -38,8 +41,11 @@ class ProductService {
         if (filters?.isFeatured !== undefined) {
             where.isFeatured = filters.isFeatured;
         }
-        if (filters?.category) {
-            where.category = filters.category;
+        if (filters?.categoryId) {
+            where.categoryId = filters.categoryId;
+        }
+        if (filters?.unitId) {
+            where.unitId = filters.unitId;
         }
         if (filters?.tags && filters.tags.length > 0) {
             where.tags = {
@@ -71,13 +77,24 @@ class ProductService {
         }
         const products = await database_1.default.product.findMany({
             where,
-            orderBy: { createdAt: 'desc' },
+            include: {
+                category: true,
+                unit: true,
+            },
+            orderBy: [
+                { categoryId: 'asc' },
+                { displayOrder: 'asc' },
+            ],
         });
         return products;
     }
     async getProductById(id) {
         const product = await database_1.default.product.findUnique({
             where: { id },
+            include: {
+                category: true,
+                unit: true,
+            },
         });
         if (!product) {
             throw new Error('Product not found');
@@ -96,6 +113,15 @@ class ProductService {
             where: { id },
         });
         return { success: true };
+    }
+    async reorderProducts(products) {
+        // Update all products with their new display order
+        const updates = products.map((product) => database_1.default.product.update({
+            where: { id: product.id },
+            data: { displayOrder: product.displayOrder },
+        }));
+        await database_1.default.$transaction(updates);
+        return { success: true, updated: products.length };
     }
 }
 exports.ProductService = ProductService;

@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import productService from '../services/product.service';
 import { sendSuccess, sendError } from '../utils/response.util';
 import { CreateProductRequest, AuthRequest } from '../types';
-import { getFileUrl } from '../utils/fileUpload.util';
 
 export class ProductController {
   async createProduct(req: AuthRequest, res: Response) {
@@ -30,18 +29,14 @@ export class ProductController {
       if (data.maxOrderQuantity !== undefined) {
         data.maxOrderQuantity = parseInt(data.maxOrderQuantity as unknown as string, 10);
       }
+      if (data.displayOrder !== undefined) {
+        data.displayOrder = parseInt(data.displayOrder as unknown as string, 10);
+      }
       if (data.isFeatured !== undefined) {
         data.isFeatured = (data.isFeatured as unknown as string) === 'true';
       }
       if (data.available !== undefined) {
         data.available = (data.available as unknown as string) === 'true';
-      }
-
-      // Handle image upload
-      if (req.file) {
-        data.imageUrl = getFileUrl(req.file.filename);
-      } else {
-        return sendError(res, 'Product image is required', 400);
       }
 
       // Validate required fields
@@ -79,6 +74,11 @@ export class ProductController {
         return sendError(res, 'Maximum order quantity must be at least 1', 400);
       }
 
+      // Validate display order if provided
+      if (data.displayOrder !== undefined && data.displayOrder < 0) {
+        return sendError(res, 'Display order must be greater than or equal to 0', 400);
+      }
+
       // Validate offer dates if both provided
       if (data.offerValidFrom && data.offerValidUntil) {
         const validFrom = new Date(data.offerValidFrom);
@@ -107,6 +107,14 @@ export class ProductController {
         maxPrice,
         hasDiscount,
       } = req.query;
+
+      // DEBUG: Log the received query params
+      console.log('=== Product Filter Debug ===');
+      console.log('categoryId:', categoryId);
+      console.log('isFeatured:', isFeatured);
+      console.log('available:', available);
+      console.log('unitId:', unitId);
+      console.log('=== End Debug ===');
 
       const filters: any = {};
 
@@ -143,6 +151,12 @@ export class ProductController {
       }
 
       const products = await productService.getAllProducts(filters);
+      
+      // Prevent caching
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
+      
       return sendSuccess(res, products);
     } catch (error: any) {
       return sendError(res, error.message || 'Failed to fetch products', 400);
@@ -168,9 +182,33 @@ export class ProductController {
       const { id } = req.params;
       const data = req.body;
 
-      // Handle image upload if a new file is provided
-      if (req.file) {
-        data.imageUrl = getFileUrl(req.file.filename);
+      // Convert string values to correct types if provided
+      if (data.price !== undefined) {
+        data.price = parseFloat(data.price as unknown as string);
+      }
+      if (data.discountPercentage !== undefined) {
+        data.discountPercentage = parseFloat(data.discountPercentage as unknown as string);
+      }
+      if (data.discountPrice !== undefined) {
+        data.discountPrice = parseFloat(data.discountPrice as unknown as string);
+      }
+      if (data.stockQuantity !== undefined) {
+        data.stockQuantity = parseInt(data.stockQuantity as unknown as string, 10);
+      }
+      if (data.minOrderQuantity !== undefined) {
+        data.minOrderQuantity = parseInt(data.minOrderQuantity as unknown as string, 10);
+      }
+      if (data.maxOrderQuantity !== undefined) {
+        data.maxOrderQuantity = parseInt(data.maxOrderQuantity as unknown as string, 10);
+      }
+      if (data.displayOrder !== undefined) {
+        data.displayOrder = parseInt(data.displayOrder as unknown as string, 10);
+      }
+      if (data.isFeatured !== undefined) {
+        data.isFeatured = (data.isFeatured as unknown as string) === 'true';
+      }
+      if (data.available !== undefined) {
+        data.available = (data.available as unknown as string) === 'true';
       }
 
       const product = await productService.updateProduct(id, data);
@@ -191,6 +229,25 @@ export class ProductController {
       return sendSuccess(res, null, 'Product deleted successfully');
     } catch (error: any) {
       return sendError(res, error.message || 'Failed to delete product', 400);
+    }
+  }
+
+  async reorderProducts(req: AuthRequest, res: Response) {
+    try {
+      if (req.user?.role !== 'ADMIN') {
+        return sendError(res, 'Unauthorized: Admin access required', 403);
+      }
+
+      const { products } = req.body;
+      
+      if (!Array.isArray(products) || products.length === 0) {
+        return sendError(res, 'Products array is required', 400);
+      }
+
+      const result = await productService.reorderProducts(products);
+      return sendSuccess(res, result, 'Products reordered successfully');
+    } catch (error: any) {
+      return sendError(res, error.message || 'Failed to reorder products', 400);
     }
   }
 }

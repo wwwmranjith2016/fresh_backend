@@ -14,6 +14,29 @@ class ProductController {
                 return (0, response_util_1.sendError)(res, 'Unauthorized: Admin access required', 403);
             }
             const data = req.body;
+            // Convert string values to correct types
+            data.price = parseFloat(data.price);
+            if (data.discountPercentage !== undefined) {
+                data.discountPercentage = parseFloat(data.discountPercentage);
+            }
+            if (data.discountPrice !== undefined) {
+                data.discountPrice = parseFloat(data.discountPrice);
+            }
+            if (data.stockQuantity !== undefined) {
+                data.stockQuantity = parseInt(data.stockQuantity, 10);
+            }
+            if (data.minOrderQuantity !== undefined) {
+                data.minOrderQuantity = parseInt(data.minOrderQuantity, 10);
+            }
+            if (data.maxOrderQuantity !== undefined) {
+                data.maxOrderQuantity = parseInt(data.maxOrderQuantity, 10);
+            }
+            if (data.isFeatured !== undefined) {
+                data.isFeatured = data.isFeatured === 'true';
+            }
+            if (data.available !== undefined) {
+                data.available = data.available === 'true';
+            }
             // Handle image upload
             if (req.file) {
                 data.imageUrl = (0, fileUpload_util_1.getFileUrl)(req.file.filename);
@@ -22,8 +45,8 @@ class ProductController {
                 return (0, response_util_1.sendError)(res, 'Product image is required', 400);
             }
             // Validate required fields
-            if (!data.name || !data.description || !data.price || !data.category || !data.unit) {
-                return (0, response_util_1.sendError)(res, 'Required fields: name, description, price, category, unit', 400);
+            if (!data.name || !data.description || !data.price || !data.categoryId || !data.unitId) {
+                return (0, response_util_1.sendError)(res, 'Required fields: name, description, price, categoryId, unitId', 400);
             }
             // Validate price is positive
             if (data.price <= 0) {
@@ -66,7 +89,14 @@ class ProductController {
     }
     async getAllProducts(req, res) {
         try {
-            const { available, isFeatured, category, tags, minPrice, maxPrice, hasDiscount, } = req.query;
+            const { available, isFeatured, categoryId, unitId, tags, minPrice, maxPrice, hasDiscount, } = req.query;
+            // DEBUG: Log the received query params
+            console.log('=== Product Filter Debug ===');
+            console.log('categoryId:', categoryId);
+            console.log('isFeatured:', isFeatured);
+            console.log('available:', available);
+            console.log('unitId:', unitId);
+            console.log('=== End Debug ===');
             const filters = {};
             if (available !== undefined) {
                 filters.available = available === 'true' ? true : available === 'false' ? false : undefined;
@@ -74,8 +104,11 @@ class ProductController {
             if (isFeatured !== undefined) {
                 filters.isFeatured = isFeatured === 'true';
             }
-            if (category) {
-                filters.category = category;
+            if (categoryId) {
+                filters.categoryId = categoryId;
+            }
+            if (unitId) {
+                filters.unitId = unitId;
             }
             if (tags) {
                 filters.tags = Array.isArray(tags) ? tags : [tags];
@@ -90,6 +123,10 @@ class ProductController {
                 filters.hasDiscount = hasDiscount === 'true';
             }
             const products = await product_service_1.default.getAllProducts(filters);
+            // Prevent caching
+            res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+            res.set('Pragma', 'no-cache');
+            res.set('Expires', '0');
             return (0, response_util_1.sendSuccess)(res, products);
         }
         catch (error) {
@@ -135,6 +172,22 @@ class ProductController {
         }
         catch (error) {
             return (0, response_util_1.sendError)(res, error.message || 'Failed to delete product', 400);
+        }
+    }
+    async reorderProducts(req, res) {
+        try {
+            if (req.user?.role !== 'ADMIN') {
+                return (0, response_util_1.sendError)(res, 'Unauthorized: Admin access required', 403);
+            }
+            const { products } = req.body;
+            if (!Array.isArray(products) || products.length === 0) {
+                return (0, response_util_1.sendError)(res, 'Products array is required', 400);
+            }
+            const result = await product_service_1.default.reorderProducts(products);
+            return (0, response_util_1.sendSuccess)(res, result, 'Products reordered successfully');
+        }
+        catch (error) {
+            return (0, response_util_1.sendError)(res, error.message || 'Failed to reorder products', 400);
         }
     }
 }

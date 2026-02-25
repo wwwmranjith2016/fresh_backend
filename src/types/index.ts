@@ -26,7 +26,7 @@ export interface RegisterRequest {
 export interface CreateProductRequest {
   name: string;
   description: string;
-  imageUrl: string;
+  image?: string; // Base64 encoded image
   price: number;
   categoryId: string;
   unitId: string;
@@ -41,6 +41,7 @@ export interface CreateProductRequest {
   stockQuantity?: number;
   minOrderQuantity?: number;
   maxOrderQuantity?: number;
+  displayOrder?: number; // Position/order of the product
   tags?: string[];
 }
 

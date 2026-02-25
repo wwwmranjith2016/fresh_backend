@@ -7,7 +7,7 @@ export class ProductService {
       data: {
         name: data.name,
         description: data.description,
-        imageUrl: data.imageUrl,
+        image: data.image, // Base64 encoded image
         price: data.price,
         categoryId: data.categoryId,
         unitId: data.unitId,
@@ -21,6 +21,7 @@ export class ProductService {
         stockQuantity: data.stockQuantity ?? 0,
         minOrderQuantity: data.minOrderQuantity ?? 1,
         maxOrderQuantity: data.maxOrderQuantity,
+        displayOrder: data.displayOrder ?? 0, // Position/order
         tags: data.tags ?? [],
       },
     });
@@ -38,6 +39,10 @@ export class ProductService {
     maxPrice?: number;
     hasDiscount?: boolean;
   }) {
+    // DEBUG: Log the filters
+    console.log('=== ProductService Filters ===');
+    console.log('filters:', JSON.stringify(filters, null, 2));
+
     const where: any = {};
 
     if (filters?.available !== undefined) {
@@ -92,7 +97,10 @@ export class ProductService {
         category: true,
         unit: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [
+        { categoryId: 'asc' },
+        { displayOrder: 'asc' },
+      ],
     });
 
     return products;
@@ -129,6 +137,20 @@ export class ProductService {
     });
 
     return { success: true };
+  }
+
+  async reorderProducts(products: { id: string; displayOrder: number }[]) {
+    // Update all products with their new display order
+    const updates = products.map((product) =>
+      prisma.product.update({
+        where: { id: product.id },
+        data: { displayOrder: product.displayOrder },
+      })
+    );
+
+    await prisma.$transaction(updates);
+
+    return { success: true, updated: products.length };
   }
 }
 
