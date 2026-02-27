@@ -37,6 +37,11 @@ export class ProductController {
         }
       }
 
+      // Remove empty image string if no file was uploaded
+      if (data.image === '') {
+        data.image = undefined;
+      }
+
       // Convert string values to correct types
       data.price = parseFloat(data.price as unknown as string);
       if (data.discountPercentage !== undefined) {
@@ -70,6 +75,17 @@ export class ProductController {
           data.available = data.available === 'true';
         }
         // If it's already a boolean, keep it as is
+      }
+
+      // Parse tags from comma-separated string to array
+      if (data.tags !== undefined) {
+        if (typeof data.tags === 'string') {
+          data.tags = data.tags
+            .split(',')
+            .map(tag => tag.trim())
+            .filter(tag => tag.length > 0);
+        }
+        // If already an array, keep as is
       }
 
       // Validate required fields
@@ -234,6 +250,11 @@ export class ProductController {
         }
       }
 
+      // Remove empty image string if no file was uploaded
+      if (data.image === '') {
+        data.image = undefined;
+      }
+
       // Convert string values to correct types if provided
       if (data.price !== undefined) {
         data.price = parseFloat(data.price as unknown as string);
@@ -269,6 +290,17 @@ export class ProductController {
           data.available = data.available === 'true';
         }
         // If it's already a boolean, keep it as is
+      }
+
+      // Parse tags from comma-separated string to array
+      if (data.tags !== undefined) {
+        if (typeof data.tags === 'string') {
+          data.tags = data.tags
+            .split(',')
+            .map(tag => tag.trim())
+            .filter(tag => tag.length > 0);
+        }
+        // If already an array, keep as is
       }
 
       const product = await productService.updateProduct(id, data);
