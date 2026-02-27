@@ -127,6 +127,21 @@ export class AuthController {
       return sendError(res, error.message || 'Failed to get user by phone', 400);
     }
   }
+
+  async authenticateByPhone(req: Request, res: Response) {
+    try {
+      const { phone } = req.params;
+
+      if (!phone) {
+        return sendError(res, 'Phone number is required', 400);
+      }
+
+      const result = await authService.authenticateByPhone(phone);
+      return sendSuccess(res, result, 'Authentication successful');
+    } catch (error: any) {
+      return sendError(res, error.message || 'Authentication failed', 401);
+    }
+  }
 }
 
 export default new AuthController();

@@ -142,6 +142,37 @@ export class AuthService {
       addresses,
     };
   }
+
+  async authenticateByPhone(phone: string) {
+    const user = await prisma.user.findUnique({
+      where: { phone },
+    });
+
+    if (!user) {
+      throw new Error('User not found with this phone number');
+    }
+
+    const payload: JwtPayload = {
+      id: user.id,
+      phone: user.phone,
+      role: user.role,
+    };
+
+    const accessToken = generateAccessToken(payload);
+    const refreshToken = generateRefreshToken(payload);
+
+    return {
+      user: {
+        id: user.id,
+        phone: user.phone,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      accessToken,
+      refreshToken,
+    };
+  }
 }
 
 export default new AuthService();

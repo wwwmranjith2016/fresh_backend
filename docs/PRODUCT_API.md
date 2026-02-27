@@ -43,23 +43,55 @@ Creates a new product in the system.
 {
   "name": "Fresh Chicken Breast",
   "description": "Premium quality boneless chicken breast, perfect for grilling and cooking",
-  "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB...",
+  "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
   "price": 280.50,
   "categoryId": "0e778c3a-6abc-46b3-b796-2be0f707678d",
   "unitId": "96bef4f9-ac67-4e4e-8b44-a7bc0796ae3d",
+  "offerId": "a1b2c3d4-5e6f-7890-abcd-ef1234567890",
   "available": true,
   "discountPercentage": 10.00,
   "discountPrice": 252.45,
-  "offerTitle": "Weekend Special",
-  "offerDescription": "Get 10% off on fresh chicken breast this weekend",
-  "offerValidFrom": "2026-03-01T00:00:00.000Z",
-  "offerValidUntil": "2026-03-31T23:59:59.000Z",
   "isFeatured": true,
   "stockQuantity": 100,
   "minOrderQuantity": 1,
   "maxOrderQuantity": 10,
   "displayOrder": 1,
   "tags": ["fresh", "premium", "boneless"]
+}
+```
+
+**Sample Request with All Fields:**
+
+```json
+{
+  "name": "Fresh Chicken Breast",
+  "description": "Premium quality boneless chicken breast, perfect for grilling and cooking",
+  "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+  "price": 280.50,
+  "categoryId": "0e778c3a-6abc-46b3-b796-2be0f707678d",
+  "unitId": "96bef4f9-ac67-4e4e-8b44-a7bc0796ae3d",
+  "offerId": "a1b2c3d4-5e6f-7890-abcd-ef1234567890",
+  "available": true,
+  "discountPercentage": 10.00,
+  "discountPrice": 252.45,
+  "isFeatured": true,
+  "stockQuantity": 100,
+  "minOrderQuantity": 1,
+  "maxOrderQuantity": 10,
+  "displayOrder": 1,
+  "tags": ["fresh", "premium", "boneless", "chicken"]
+}
+```
+
+**Minimum Required Fields:**
+
+```json
+{
+  "name": "Fresh Chicken Breast",
+  "description": "Premium quality boneless chicken breast",
+  "price": 280.50,
+  "categoryId": "0e778c3a-6abc-46b3-b796-2be0f707678d",
+  "unitId": "96bef4f9-ac67-4e4e-8b44-a7bc0796ae3d"
 }
 ```
 
@@ -70,20 +102,21 @@ Creates a new product in the system.
 | `name` | string | **Yes** | - | Non-empty | Product name |
 | `description` | string | **Yes** | - | Non-empty | Product description |
 | `image` | string | No | `null` | Base64 data URI | Product image as Base64 encoded string with data URI prefix |
+| `imageWidth` | number | No | `null` | > 0 | Width of the uploaded image in pixels |
+| `imageHeight` | number | No | `null` | > 0 | Height of the uploaded image in pixels |
+| `imageMimeType` | string | No | `null` | Valid MIME type | MIME type of the uploaded image (e.g., image/png, image/jpeg) |
+| `imageSize` | number | No | `null` | > 0 | Size of the image in bytes |
 | `price` | number | **Yes** | - | > 0 | Product price in decimal (max 10 digits, 2 decimal places) |
 | `categoryId` | string (UUID) | **Yes** | - | Valid UUID | Reference to existing category |
 | `unitId` | string (UUID) | **Yes** | - | Valid UUID | Reference to existing unit |
+| `offerId` | string (UUID) | No | `null` | Valid UUID | Reference to existing offer (optional promotional offer) |
 | `available` | boolean | No | `true` | true/false | Product availability status |
 | `discountPercentage` | number | No | `null` | 0 - 100 | Discount percentage (max 5 digits, 2 decimal places) |
 | `discountPrice` | number | No | `null` | >= 0 | Discounted price (max 10 digits, 2 decimal places) |
-| `offerTitle` | string | No | `null` | - | Title for promotional offer |
-| `offerDescription` | string | No | `null` | - | Description of the offer |
-| `offerValidFrom` | string (ISO 8601) | No | `null` | Valid ISO date | Offer start date |
-| `offerValidUntil` | string (ISO 8601) | No | `null` | Valid ISO date, must be after `offerValidFrom` | Offer end date |
 | `isFeatured` | boolean | No | `false` | true/false | Whether product is featured |
-| `stockQuantity` | integer | No | `0` | >= 0 | Available stock quantity |
+| `stockQuantity` | integer | No | `10000` | >= 0 | Available stock quantity |
 | `minOrderQuantity` | integer | No | `1` | >= 1 | Minimum order quantity |
-| `maxOrderQuantity` | integer | No | `null` | >= 1 | Maximum order quantity |
+| `maxOrderQuantity` | integer | No | `100` | >= 1 | Maximum order quantity |
 | `displayOrder` | integer | No | `0` | >= 0 | Display position/order |
 | `tags` | string[] | No | `[]` | Array of strings | Product tags for filtering |
 
@@ -100,16 +133,17 @@ Creates a new product in the system.
     "name": "Fresh Chicken Breast",
     "description": "Premium quality boneless chicken breast, perfect for grilling and cooking",
     "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB...",
+    "imageWidth": 800,
+    "imageHeight": 600,
+    "imageMimeType": "image/png",
+    "imageSize": 45000,
     "price": "280.50",
     "categoryId": "0e778c3a-6abc-46b3-b796-2be0f707678d",
     "unitId": "96bef4f9-ac67-4e4e-8b44-a7bc0796ae3d",
+    "offerId": "a1b2c3d4-5e6f-7890-abcd-ef1234567890",
     "available": true,
     "discountPercentage": "10.00",
     "discountPrice": "252.45",
-    "offerTitle": "Weekend Special",
-    "offerDescription": "Get 10% off on fresh chicken breast this weekend",
-    "offerValidFrom": "2026-03-01T00:00:00.000Z",
-    "offerValidUntil": "2026-03-31T23:59:59.000Z",
     "isFeatured": true,
     "stockQuantity": 100,
     "minOrderQuantity": 1,

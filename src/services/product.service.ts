@@ -138,9 +138,17 @@ export class ProductService {
   }
 
   async updateProduct(id: string, data: Partial<CreateProductRequest> & { available?: boolean }) {
+    // Always enforce hardcoded quantity values - these are NOT user-configurable
+    const updateData = {
+      ...data,
+      stockQuantity: 10000,          // Hardcoded
+      minOrderQuantity: 1,            // Hardcoded
+      maxOrderQuantity: 100,          // Hardcoded
+    };
+
     const product = await prisma.product.update({
       where: { id },
-      data,
+      data: updateData,
     });
 
     return product;
