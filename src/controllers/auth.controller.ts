@@ -142,6 +142,26 @@ export class AuthController {
       return sendError(res, error.message || 'Authentication failed', 401);
     }
   }
+
+  async getProfile(req: AuthRequest, res: Response) {
+    try {
+      const userId = req.user?.id;
+
+      if (!userId) {
+        return sendError(res, 'Unauthorized', 401);
+      }
+
+      const user = await authService.getProfile(userId);
+      
+      if (!user) {
+        return sendError(res, 'User not found', 404);
+      }
+
+      return sendSuccess(res, user, 'Profile retrieved successfully');
+    } catch (error: any) {
+      return sendError(res, error.message || 'Failed to get profile', 400);
+    }
+  }
 }
 
 export default new AuthController();

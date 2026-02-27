@@ -173,6 +173,24 @@ export class AuthService {
       refreshToken,
     };
   }
+
+  async getProfile(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        phone: true,
+        name: true,
+        email: true,
+        role: true,
+        fcmToken: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return user;
+  }
 }
 
 export default new AuthService();
