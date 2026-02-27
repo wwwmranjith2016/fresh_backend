@@ -50,15 +50,10 @@ export class ProductController {
       if (data.discountPrice !== undefined) {
         data.discountPrice = parseFloat(data.discountPrice as unknown as string);
       }
-      if (data.stockQuantity !== undefined) {
-        data.stockQuantity = parseInt(data.stockQuantity as unknown as string, 10);
-      }
-      if (data.minOrderQuantity !== undefined) {
-        data.minOrderQuantity = parseInt(data.minOrderQuantity as unknown as string, 10);
-      }
-      if (data.maxOrderQuantity !== undefined) {
-        data.maxOrderQuantity = parseInt(data.maxOrderQuantity as unknown as string, 10);
-      }
+      
+      // Note: stockQuantity, minOrderQuantity, and maxOrderQuantity are hardcoded in backend
+      // (10000, 1, 100 respectively) and NOT user-configurable via API
+
       if (data.displayOrder !== undefined) {
         data.displayOrder = parseInt(data.displayOrder as unknown as string, 10);
       }
@@ -106,21 +101,6 @@ export class ProductController {
       // Validate discount price if provided
       if (data.discountPrice !== undefined && data.discountPrice < 0) {
         return sendError(res, 'Discount price must be greater than or equal to 0', 400);
-      }
-
-      // Validate stock quantity if provided
-      if (data.stockQuantity !== undefined && data.stockQuantity < 0) {
-        return sendError(res, 'Stock quantity must be greater than or equal to 0', 400);
-      }
-
-      // Validate min order quantity if provided
-      if (data.minOrderQuantity !== undefined && data.minOrderQuantity < 1) {
-        return sendError(res, 'Minimum order quantity must be at least 1', 400);
-      }
-
-      // Validate max order quantity if provided
-      if (data.maxOrderQuantity !== undefined && data.maxOrderQuantity < 1) {
-        return sendError(res, 'Maximum order quantity must be at least 1', 400);
       }
 
       // Validate display order if provided
@@ -265,15 +245,10 @@ export class ProductController {
       if (data.discountPrice !== undefined) {
         data.discountPrice = parseFloat(data.discountPrice as unknown as string);
       }
-      if (data.stockQuantity !== undefined) {
-        data.stockQuantity = parseInt(data.stockQuantity as unknown as string, 10);
-      }
-      if (data.minOrderQuantity !== undefined) {
-        data.minOrderQuantity = parseInt(data.minOrderQuantity as unknown as string, 10);
-      }
-      if (data.maxOrderQuantity !== undefined) {
-        data.maxOrderQuantity = parseInt(data.maxOrderQuantity as unknown as string, 10);
-      }
+      
+      // Note: stockQuantity, minOrderQuantity, and maxOrderQuantity are hardcoded in backend
+      // (10000, 1, 100 respectively) and NOT user-configurable via API
+
       if (data.displayOrder !== undefined) {
         data.displayOrder = parseInt(data.displayOrder as unknown as string, 10);
       }

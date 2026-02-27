@@ -39,9 +39,6 @@ export interface CreateProductRequest {
   discountPercentage?: number;
   discountPrice?: number;
   isFeatured?: boolean;
-  stockQuantity?: number;
-  minOrderQuantity?: number;
-  maxOrderQuantity?: number;
   displayOrder?: number; // Position/order of the product
   tags?: string[];
 }
