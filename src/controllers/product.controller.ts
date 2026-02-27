@@ -80,10 +80,10 @@ export class ProductController {
       // Parse tags from comma-separated string to array
       if (data.tags !== undefined) {
         if (typeof data.tags === 'string') {
-          data.tags = data.tags
+          data.tags = (data.tags as string)
             .split(',')
-            .map(tag => tag.trim())
-            .filter(tag => tag.length > 0);
+            .map((tag: string) => tag.trim())
+            .filter((tag: string) => tag.length > 0);
         }
         // If already an array, keep as is
       }
@@ -295,10 +295,10 @@ export class ProductController {
       // Parse tags from comma-separated string to array
       if (data.tags !== undefined) {
         if (typeof data.tags === 'string') {
-          data.tags = data.tags
+          data.tags = (data.tags as string)
             .split(',')
-            .map(tag => tag.trim())
-            .filter(tag => tag.length > 0);
+            .map((tag: string) => tag.trim())
+            .filter((tag: string) => tag.length > 0);
         }
         // If already an array, keep as is
       }
