@@ -94,12 +94,12 @@ export class ProductController {
         return sendError(res, 'Display order must be greater than or equal to 0', 400);
       }
 
-      // Validate offer dates if both provided
-      if (data.offerValidFrom && data.offerValidUntil) {
-        const validFrom = new Date(data.offerValidFrom);
-        const validUntil = new Date(data.offerValidUntil);
-        if (validFrom >= validUntil) {
-          return sendError(res, 'Offer valid from date must be before valid until date', 400);
+      // Validate offerId if provided
+      if (data.offerId) {
+        try {
+          await productService.validateOfferId(data.offerId);
+        } catch (error: any) {
+          return sendError(res, error.message || 'Invalid offer ID', 400);
         }
       }
 

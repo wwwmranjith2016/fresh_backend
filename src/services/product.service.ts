@@ -2,6 +2,18 @@ import prisma from '../config/database';
 import { CreateProductRequest } from '../types';
 
 export class ProductService {
+  async validateOfferId(offerId: string) {
+    const offer = await prisma.offer.findUnique({
+      where: { id: offerId },
+    });
+
+    if (!offer) {
+      throw new Error('Offer not found');
+    }
+
+    return offer;
+  }
+
   async createProduct(data: CreateProductRequest) {
     const product = await prisma.product.create({
       data: {
@@ -11,12 +23,9 @@ export class ProductService {
         price: data.price,
         categoryId: data.categoryId,
         unitId: data.unitId,
+        offerId: data.offerId,
         discountPercentage: data.discountPercentage,
         discountPrice: data.discountPrice,
-        offerTitle: data.offerTitle,
-        offerDescription: data.offerDescription,
-        offerValidFrom: data.offerValidFrom ? new Date(data.offerValidFrom) : undefined,
-        offerValidUntil: data.offerValidUntil ? new Date(data.offerValidUntil) : undefined,
         isFeatured: data.isFeatured ?? false,
         stockQuantity: data.stockQuantity ?? 0,
         minOrderQuantity: data.minOrderQuantity ?? 1,
@@ -96,6 +105,7 @@ export class ProductService {
       include: {
         category: true,
         unit: true,
+        offer: true,
       },
       orderBy: [
         { categoryId: 'asc' },
@@ -112,6 +122,7 @@ export class ProductService {
       include: {
         category: true,
         unit: true,
+        offer: true,
       },
     });
 

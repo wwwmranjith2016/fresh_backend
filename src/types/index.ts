@@ -30,13 +30,10 @@ export interface CreateProductRequest {
   price: number;
   categoryId: string;
   unitId: string;
+  offerId?: string; // Reference to Offer
   available?: boolean;
   discountPercentage?: number;
   discountPrice?: number;
-  offerTitle?: string;
-  offerDescription?: string;
-  offerValidFrom?: string;
-  offerValidUntil?: string;
   isFeatured?: boolean;
   stockQuantity?: number;
   minOrderQuantity?: number;
@@ -54,6 +51,15 @@ export interface CreateUnitRequest {
   name: string;
   symbol?: string;
   description?: string;
+}
+
+export interface CreateOfferRequest {
+  title: string;
+  description?: string;
+  discountPercentage?: number;
+  discountPrice?: number;
+  validFrom?: string;
+  validUntil?: string;
 }
 
 export interface CreateOrderRequest {

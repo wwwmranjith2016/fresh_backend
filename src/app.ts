@@ -15,6 +15,7 @@ import notificationRoutes from './routes/notification.routes';
 import adminRoutes from './routes/admin.routes';
 import categoryRoutes from './routes/category.routes';
 import unitRoutes from './routes/unit.routes';
+import offerRoutes from './routes/offer.routes';
 
 const app: Application = express();
 const server = http.createServer(app);
@@ -60,6 +61,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/units', unitRoutes);
+app.use('/api/offers', offerRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
