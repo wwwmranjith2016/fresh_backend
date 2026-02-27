@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import productService from '../services/product.service';
 import { sendSuccess, sendError } from '../utils/response.util';
 import { CreateProductRequest, AuthRequest } from '../types';
+import { fileToDataUriAndDelete } from '../utils/fileUpload.util';
 
 export class ProductController {
   async createProduct(req: AuthRequest, res: Response) {
@@ -11,6 +12,12 @@ export class ProductController {
       }
 
       const data: CreateProductRequest = req.body;
+
+      // Handle file upload - convert to base64 data URI
+      if ((req as any).file) {
+        data.image = fileToDataUriAndDelete((req as any).file);
+        console.log('✅ File uploaded and converted to Base64 data URI');
+      }
 
       // Convert string values to correct types
       data.price = parseFloat(data.price as unknown as string);
@@ -189,6 +196,12 @@ export class ProductController {
 
       const { id } = req.params;
       const data = req.body;
+
+      // Handle file upload - convert to base64 data URI
+      if ((req as any).file) {
+        data.image = fileToDataUriAndDelete((req as any).file);
+        console.log('✅ File uploaded and converted to Base64 data URI for product update');
+      }
 
       // Convert string values to correct types if provided
       if (data.price !== undefined) {
