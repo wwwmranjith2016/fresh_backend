@@ -26,7 +26,11 @@ export interface RegisterRequest {
 export interface CreateProductRequest {
   name: string;
   description: string;
-  image?: string; // Base64 encoded image
+  image?: string; // Base64 encoded image (after compression)
+  imageWidth?: number;
+  imageHeight?: number;
+  imageMimeType?: string;
+  imageSize?: number;
   price: number;
   categoryId: string;
   unitId: string;

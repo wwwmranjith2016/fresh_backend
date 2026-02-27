@@ -126,6 +126,10 @@ model Product {
   name                String
   description         String
   image               String?     @map("image")
+  imageWidth          Int?        @map("image_width")
+  imageHeight         Int?        @map("image_height")
+  imageMimeType       String?     @map("image_mime_type")
+  imageSize           Int?        @map("image_size")
   price               Decimal     @db.Decimal(10, 2)
   categoryId          String      @map("category_id")
   unitId              String      @map("unit_id")

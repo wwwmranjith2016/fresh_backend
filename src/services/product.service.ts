@@ -19,7 +19,11 @@ export class ProductService {
       data: {
         name: data.name,
         description: data.description,
-        image: data.image, // Base64 encoded image
+        image: data.image,
+        imageWidth: data.imageWidth,
+        imageHeight: data.imageHeight,
+        imageMimeType: data.imageMimeType,
+        imageSize: data.imageSize,
         price: data.price,
         categoryId: data.categoryId,
         unitId: data.unitId,
@@ -30,7 +34,7 @@ export class ProductService {
         stockQuantity: data.stockQuantity ?? 0,
         minOrderQuantity: data.minOrderQuantity ?? 1,
         maxOrderQuantity: data.maxOrderQuantity,
-        displayOrder: data.displayOrder ?? 0, // Position/order
+        displayOrder: data.displayOrder ?? 0,
         tags: data.tags ?? [],
       },
     });

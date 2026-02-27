@@ -2,7 +2,12 @@ import { Request, Response } from 'express';
 import productService from '../services/product.service';
 import { sendSuccess, sendError } from '../utils/response.util';
 import { CreateProductRequest, AuthRequest } from '../types';
-import { fileToDataUriAndDelete } from '../utils/fileUpload.util';
+import { 
+  processProductImage, 
+  deleteImageFile,
+  formatFileSize,
+  calculateCompressionRatio 
+} from '../utils/imageProcessing.util';
 
 export class ProductController {
   async createProduct(req: AuthRequest, res: Response) {
@@ -13,10 +18,23 @@ export class ProductController {
 
       const data: CreateProductRequest = req.body;
 
-      // Handle file upload - convert to base64 data URI
+      // Handle image upload - compress and extract metadata
       if ((req as any).file) {
-        data.image = fileToDataUriAndDelete((req as any).file);
-        console.log('✅ File uploaded and converted to Base64 data URI');
+        try {
+          const processedImage = await processProductImage((req as any).file);
+          data.image = processedImage.base64;
+          data.imageWidth = processedImage.metadata.width;
+          data.imageHeight = processedImage.metadata.height;
+          data.imageMimeType = processedImage.metadata.mimeType;
+          data.imageSize = processedImage.metadata.sizeBytes;
+
+          console.log('✅ Image uploaded and compressed');
+          console.log(`   Dimensions: ${processedImage.metadata.width}x${processedImage.metadata.height}px`);
+          console.log(`   Compressed size: ${formatFileSize(processedImage.metadata.sizeBytes)}`);
+        } catch (error: any) {
+          deleteImageFile((req as any).file.path);
+          return sendError(res, error.message || 'Failed to process image', 400);
+        }
       }
 
       // Convert string values to correct types
@@ -197,10 +215,23 @@ export class ProductController {
       const { id } = req.params;
       const data = req.body;
 
-      // Handle file upload - convert to base64 data URI
+      // Handle file upload - compress and extract metadata
       if ((req as any).file) {
-        data.image = fileToDataUriAndDelete((req as any).file);
-        console.log('✅ File uploaded and converted to Base64 data URI for product update');
+        try {
+          const processedImage = await processProductImage((req as any).file);
+          data.image = processedImage.base64;
+          data.imageWidth = processedImage.metadata.width;
+          data.imageHeight = processedImage.metadata.height;
+          data.imageMimeType = processedImage.metadata.mimeType;
+          data.imageSize = processedImage.metadata.sizeBytes;
+
+          console.log('✅ Image uploaded and compressed for product update');
+          console.log(`   Dimensions: ${processedImage.metadata.width}x${processedImage.metadata.height}px`);
+          console.log(`   Compressed size: ${formatFileSize(processedImage.metadata.sizeBytes)}`);
+        } catch (error: any) {
+          deleteImageFile((req as any).file.path);
+          return sendError(res, error.message || 'Failed to process image', 400);
+        }
       }
 
       // Convert string values to correct types if provided
