@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import authService from '../services/auth.service';
 import { sendSuccess, sendError } from '../utils/response.util';
-import { RegisterRequest, LoginRequest, AuthRequest } from '../types';
+import { RegisterRequest, LoginRequest, AuthRequest, UpdateProfileRequest } from '../types';
 import { verifyRefreshToken, generateAccessToken } from '../utils/jwt.util';
 
 export class AuthController {
@@ -160,6 +160,28 @@ export class AuthController {
       return sendSuccess(res, user, 'Profile retrieved successfully');
     } catch (error: any) {
       return sendError(res, error.message || 'Failed to get profile', 400);
+    }
+  }
+
+  async updateProfile(req: AuthRequest, res: Response) {
+    try {
+      const userId = req.user?.id;
+
+      if (!userId) {
+        return sendError(res, 'Unauthorized', 401);
+      }
+
+      const data: UpdateProfileRequest = req.body;
+
+      const user = await authService.updateProfile(userId, data);
+      
+      if (!user) {
+        return sendError(res, 'User not found', 404);
+      }
+
+      return sendSuccess(res, user, 'Profile updated successfully');
+    } catch (error: any) {
+      return sendError(res, error.message || 'Failed to update profile', 400);
     }
   }
 }

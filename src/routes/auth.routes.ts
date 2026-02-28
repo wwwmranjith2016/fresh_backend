@@ -13,5 +13,6 @@ router.get('/user/:phone', authController.getUserByPhone.bind(authController));
 router.post('/token/:phone', authController.authenticateByPhone.bind(authController));
 router.get('/latest-customer', authController.getLatestCustomer.bind(authController));
 router.get('/profile', authMiddleware, authController.getProfile.bind(authController));
+router.put('/profile', authMiddleware, authController.updateProfile.bind(authController));
 
 export default router;

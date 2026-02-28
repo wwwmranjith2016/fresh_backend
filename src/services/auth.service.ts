@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import prisma from '../config/database';
-import { RegisterRequest, LoginRequest } from '../types';
+import { RegisterRequest, LoginRequest, UpdateProfileRequest } from '../types';
 import { generateAccessToken, generateRefreshToken, JwtPayload } from '../utils/jwt.util';
 import { UserRole } from '@prisma/client';
 
@@ -177,6 +177,28 @@ export class AuthService {
   async getProfile(userId: string) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
+      select: {
+        id: true,
+        phone: true,
+        name: true,
+        email: true,
+        role: true,
+        fcmToken: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return user;
+  }
+
+  async updateProfile(userId: string, data: UpdateProfileRequest) {
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        name: data.name,
+        email: data.email,
+      },
       select: {
         id: true,
         phone: true,

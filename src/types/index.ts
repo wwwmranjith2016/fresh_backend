@@ -23,6 +23,11 @@ export interface RegisterRequest {
   role?: UserRole;
 }
 
+export interface UpdateProfileRequest {
+  name?: string;
+  email?: string;
+}
+
 export interface CreateProductRequest {
   name: string;
   description: string;
