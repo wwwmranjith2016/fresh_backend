@@ -106,8 +106,8 @@ export interface CreateAddressRequest {
   label: string;
   street: string;
   city: string;
-  state: string;
-  zipCode: string;
+  state?: string;
+  zipCode?: string;
   latitude?: number;
   longitude?: number;
   isDefault?: boolean;

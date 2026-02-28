@@ -13,8 +13,8 @@ export class AddressController {
 
       const data: CreateAddressRequest = req.body;
 
-      if (!data.label || !data.street || !data.city || !data.state || !data.zipCode) {
-        return sendError(res, 'All address fields are required', 400);
+      if (!data.label || !data.street || !data.city) {
+        return sendError(res, 'Label, street, and city are required', 400);
       }
 
       const address = await addressService.createAddress(userId, data);
